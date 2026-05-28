@@ -57,6 +57,16 @@ const MusicModule = {
     this.audioPlayer.addEventListener('ended', () => {
       this.playNext();
     });
+
+    // Lyrics edit toggle
+    document.getElementById('btn-edit-lyrics')?.addEventListener('click', () => {
+      this.toggleLyricsEdit();
+    });
+
+    // Lyrics save on blur
+    document.getElementById('lyrics-input')?.addEventListener('blur', () => {
+      this.saveLyrics();
+    });
   },
 
   // Handle file upload
@@ -75,6 +85,7 @@ const MusicModule = {
           title: file.name.replace(/\.[^/.]+$/, ''),
           artist: 'ไม่ทราบศิลปิน',
           data: event.target.result,
+          lyrics: '',
           createdAt: new Date().toISOString()
         };
 
@@ -82,7 +93,6 @@ const MusicModule = {
         this.savePlaylist();
         this.render();
 
-        // Auto play if first track
         if (this.playlist.length === 1) {
           this.playTrack(track.id);
         }
@@ -100,7 +110,6 @@ const MusicModule = {
 
     if (!url) return;
 
-    // Extract video ID
     const videoId = this.extractYouTubeId(url);
     if (!videoId) {
       alert('ลิงก์ YouTube ไม่ถูกต้อง');
@@ -113,6 +122,7 @@ const MusicModule = {
       title: 'YouTube Video',
       artist: 'YouTube',
       videoId: videoId,
+      lyrics: '',
       createdAt: new Date().toISOString()
     };
 
@@ -144,7 +154,6 @@ const MusicModule = {
 
     if (!url) return;
 
-    // Extract Spotify info
     const spotifyInfo = this.extractSpotifyInfo(url);
     if (!spotifyInfo) {
       alert('ลิงก์ Spotify ไม่ถูกต้อง');
@@ -158,6 +167,7 @@ const MusicModule = {
       artist: 'Spotify',
       spotifyType: spotifyInfo.type,
       spotifyId: spotifyInfo.id,
+      lyrics: '',
       createdAt: new Date().toISOString()
     };
 
@@ -192,29 +202,29 @@ const MusicModule = {
     if (!track) return;
 
     this.currentTrack = track;
-
-    // Stop audio player first
     this.audioPlayer.pause();
     this.audioPlayer.src = '';
 
-    // Update UI
     document.querySelectorAll('.playlist-item').forEach(item => {
       item.classList.toggle('playing', item.dataset.id == id);
     });
 
-    // Update now playing
     document.getElementById('now-playing-title').textContent = track.title;
     document.getElementById('now-playing-artist').textContent = track.artist;
 
-    if (track.type === 'file') {
-      // Show music icon
-      document.getElementById('now-playing-cover').innerHTML = '<i class="ti ti-music"></i>';
+    // Show lyrics section
+    const lyricsSection = document.getElementById('lyrics-section');
+    lyricsSection.style.display = 'block';
+    document.getElementById('lyrics-display').textContent = track.lyrics || 'ยังไม่มีเนื้อเพลง กด "แก้ไข" เพื่อเพิ่ม';
+    document.getElementById('lyrics-input').value = track.lyrics || '';
+    document.getElementById('lyrics-input').style.display = 'none';
+    document.getElementById('lyrics-display').style.display = 'block';
 
-      // Play audio file
+    if (track.type === 'file') {
+      document.getElementById('now-playing-cover').innerHTML = '<i class="ti ti-music"></i>';
       this.audioPlayer.src = track.data;
       this.audioPlayer.play();
     } else if (track.type === 'youtube') {
-      // Show YouTube embed (without autoplay to avoid restrictions)
       document.getElementById('now-playing-cover').innerHTML = `
         <iframe
           style="border-radius:12px"
@@ -224,7 +234,6 @@ const MusicModule = {
         </iframe>
       `;
     } else if (track.type === 'spotify') {
-      // Show Spotify embed
       document.getElementById('now-playing-cover').innerHTML = `
         <iframe
           style="border-radius:12px"
@@ -238,6 +247,39 @@ const MusicModule = {
         </iframe>
       `;
     }
+  },
+
+  // Toggle lyrics edit mode
+  toggleLyricsEdit() {
+    const display = document.getElementById('lyrics-display');
+    const input = document.getElementById('lyrics-input');
+    const btn = document.getElementById('btn-edit-lyrics');
+
+    if (input.style.display === 'none') {
+      input.style.display = 'block';
+      display.style.display = 'none';
+      input.focus();
+      btn.textContent = 'บันทึก';
+    } else {
+      this.saveLyrics();
+    }
+  },
+
+  // Save lyrics
+  saveLyrics() {
+    if (!this.currentTrack) return;
+
+    const input = document.getElementById('lyrics-input');
+    const display = document.getElementById('lyrics-display');
+    const btn = document.getElementById('btn-edit-lyrics');
+
+    this.currentTrack.lyrics = input.value;
+    this.savePlaylist();
+
+    display.textContent = input.value || 'ยังไม่มีเนื้อเพลง';
+    input.style.display = 'none';
+    display.style.display = 'block';
+    btn.textContent = 'แก้ไข';
   },
 
   // Play next track
@@ -256,7 +298,6 @@ const MusicModule = {
     this.savePlaylist();
     this.render();
 
-    // Stop if currently playing
     if (this.currentTrack && this.currentTrack.id === id) {
       this.audioPlayer.pause();
       this.audioPlayer.src = '';
@@ -264,6 +305,7 @@ const MusicModule = {
       document.getElementById('now-playing-title').textContent = 'ไม่มีเพลงเล่น';
       document.getElementById('now-playing-artist').textContent = '-';
       document.getElementById('now-playing-cover').innerHTML = '<i class="ti ti-music"></i>';
+      document.getElementById('lyrics-section').style.display = 'none';
     }
   },
 
@@ -295,6 +337,7 @@ const MusicModule = {
           <div class="playlist-item-title">${this.escapeHtml(track.title)}</div>
           <div class="playlist-item-artist">${this.escapeHtml(track.artist)}</div>
         </div>
+        ${this.currentTrack?.id === track.id ? '<div class="sound-bars"><span></span><span></span><span></span><span></span></div>' : ''}
         <div class="playlist-item-actions">
           <button data-action="play" title="เล่น"><i class="ti ti-player-play"></i></button>
           <button data-action="delete" title="ลบ"><i class="ti ti-trash"></i></button>
@@ -302,7 +345,6 @@ const MusicModule = {
       </div>
     `).join('');
 
-    // Attach events
     container.querySelectorAll('.playlist-item').forEach(item => {
       const id = Number(item.dataset.id);
 
@@ -328,13 +370,11 @@ const MusicModule = {
     if (!data) return [];
 
     const tracks = JSON.parse(data);
-    // Only keep YouTube and Spotify tracks (file data is too large for localStorage)
     return tracks.filter(t => t.type === 'youtube' || t.type === 'spotify');
   },
 
   // Save playlist to storage
   savePlaylist() {
-    // Only save YouTube and Spotify tracks
     const streamingTracks = this.playlist.filter(t => t.type === 'youtube' || t.type === 'spotify');
     localStorage.setItem(this.storageKey, JSON.stringify(streamingTracks));
   },

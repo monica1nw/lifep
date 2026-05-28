@@ -1,0 +1,25 @@
+{
+  "name": "LifeP - Personal Dashboard",
+  "short_name": "LifeP",
+  "description": "แดชบอร์ดส่วนตัวสำหรับจัดการงาน โน้ต ปฏิทิน และเพลง",
+  "start_url": "/lifep/",
+  "display": "standalone",
+  "background_color": "#0e0e0f",
+  "theme_color": "#7c6af7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "th"
+}

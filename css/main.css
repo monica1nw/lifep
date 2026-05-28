@@ -293,11 +293,11 @@ select option {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  animation: fadeIn 0.5s ease;
 }
 
 .afk-overlay.active {
   display: flex;
+  animation: fadeIn 0.5s ease;
 }
 
 .afk-time {

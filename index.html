@@ -2,9 +2,16 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#7c6af7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeP">
+<meta name="description" content="แดชบอร์ดส่วนตัวสำหรับจัดการงาน โน้ต ปฏิทิน และเพลง">
 <title>LifeP</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -234,6 +241,16 @@
       <!-- Audio Player -->
       <div class="audio-player">
         <audio id="audio-player" controls></audio>
+      </div>
+
+      <!-- Lyrics Section -->
+      <div class="lyrics-section" id="lyrics-section" style="display:none;">
+        <div class="lyrics-header">
+          <span class="lyrics-title">🎵 เนื้อเพลง</span>
+          <button class="lyrics-toggle" id="btn-edit-lyrics">แก้ไข</button>
+        </div>
+        <div class="lyrics-content" id="lyrics-display"></div>
+        <textarea class="lyrics-textarea" id="lyrics-input" placeholder="วางเนื้อเพลงที่นี่..." style="display:none;"></textarea>
       </div>
 
       <!-- Add Music -->
