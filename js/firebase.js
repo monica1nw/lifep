@@ -161,8 +161,51 @@ function initNavigation() {
       if (page === 'calendar' && typeof renderCalendar === 'function') {
         renderCalendar();
       }
+
+      // Close sidebar on mobile after navigation
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.add('collapsed');
+        updateToggleIcon(true);
+      }
     });
   });
+}
+
+// ===== Sidebar Toggle =====
+function initSidebarToggle() {
+  const toggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('sidebar');
+
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    updateToggleIcon(sidebar.classList.contains('collapsed'));
+  });
+
+  // Close sidebar by default on mobile
+  if (window.innerWidth <= 768) {
+    sidebar.classList.add('collapsed');
+    updateToggleIcon(true);
+  }
+
+  // Handle resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('collapsed');
+      updateToggleIcon(true);
+    } else {
+      sidebar.classList.remove('collapsed');
+      updateToggleIcon(false);
+    }
+  });
+}
+
+function updateToggleIcon(isCollapsed) {
+  const toggle = document.getElementById('sidebar-toggle');
+  if (isCollapsed) {
+    toggle.innerHTML = '<i class="ti ti-menu-2"></i>';
+  } else {
+    toggle.innerHTML = '<i class="ti ti-x"></i>';
+  }
 }
 
 // ===== Seed Test Data =====
@@ -274,6 +317,7 @@ const AFKMode = {
 document.addEventListener('DOMContentLoaded', () => {
   DB.init();
   initNavigation();
+  initSidebarToggle();
 
   // Seed test data if empty
   seedTestData();
