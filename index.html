@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="css/notes.css">
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/music.css">
 </head>
 <body>
 
@@ -39,6 +40,9 @@
       </div>
       <div class="nav-item" data-page="profile">
         <i class="ti ti-user"></i> ฉันเอง
+      </div>
+      <div class="nav-item" data-page="music">
+        <i class="ti ti-music"></i> เพลง
       </div>
     </div>
 
@@ -200,6 +204,64 @@
       </div>
     </div>
 
+    <!-- ========= MUSIC PAGE ========= -->
+    <div class="page" id="page-music">
+      <div class="page-header">
+        <div>
+          <div class="page-title">เพลง</div>
+          <div class="page-subtitle">เพลินกับเพลงที่คุณชอบ</div>
+        </div>
+      </div>
+
+      <!-- Now Playing -->
+      <div class="now-playing" id="now-playing">
+        <div class="now-playing-info">
+          <div class="now-playing-title" id="now-playing-title">ไม่มีเพลงเล่น</div>
+          <div class="now-playing-artist" id="now-playing-artist">-</div>
+        </div>
+        <div class="now-playing-cover" id="now-playing-cover">
+          <i class="ti ti-music"></i>
+        </div>
+      </div>
+
+      <!-- Audio Player -->
+      <div class="audio-player">
+        <audio id="audio-player" controls></audio>
+      </div>
+
+      <!-- Add Music -->
+      <div class="music-add-section">
+        <div class="music-tabs">
+          <button class="music-tab active" data-tab="file">📁 ไฟล์เพลง</button>
+          <button class="music-tab" data-tab="youtube">▶️ YouTube</button>
+          <button class="music-tab" data-tab="spotify">🎧 Spotify</button>
+        </div>
+
+        <div class="music-tab-content active" id="tab-file">
+          <input type="file" id="music-file-input" accept="audio/*" multiple hidden>
+          <button class="btn" id="btn-add-music-file"><i class="ti ti-upload"></i> เลือกไฟล์เพลง</button>
+        </div>
+
+        <div class="music-tab-content" id="tab-youtube">
+          <div class="youtube-input-row">
+            <input type="text" id="youtube-url" placeholder="วางลิงก์ YouTube ที่นี่...">
+            <button class="btn" id="btn-add-youtube"><i class="ti ti-plus"></i> เพิ่ม</button>
+          </div>
+        </div>
+
+        <div class="music-tab-content" id="tab-spotify">
+          <div class="youtube-input-row">
+            <input type="text" id="spotify-url" placeholder="วางลิงก์ Spotify ที่นี่...">
+            <button class="btn" id="btn-add-spotify"><i class="ti ti-plus"></i> เพิ่ม</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div class="section-label">เพลงของฉัน</div>
+      <div class="playlist" id="playlist"></div>
+    </div>
+
   </div>
 </div>
 
@@ -208,5 +270,6 @@
 <script src="js/notes.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/music.js"></script>
 </body>
 </html>
