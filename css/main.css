@@ -18,6 +18,34 @@
   --font: 'IBM Plex Sans Thai', 'IBM Plex Sans', sans-serif;
 }
 
+/* Light Theme */
+:root.light {
+  --bg: #f5f5f7;
+  --bg2: #ffffff;
+  --bg3: #e8e8ed;
+  --bg4: #d1d1d6;
+  --accent: #7c6af7;
+  --accent2: #5a4bd1;
+  --text1: #1d1d1f;
+  --text2: #6e6e73;
+  --text3: #8e8e93;
+  --border: #d2d2d7;
+  --green: #34c759;
+  --red: #ff3b30;
+  --amber: #ff9500;
+}
+
+/* Smooth transition for theme change */
+html {
+  transition: background-color 0.4s ease;
+}
+
+body, .shell, .sidebar, .content, .page, .nav-item, .stat-card,
+.note-card, .todo-item, .event-item, .playlist-item, .now-playing,
+.music-add-section, .lyrics-section, .profile-form, .afk-overlay {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
 html, body {
   height: 100%;
   background: var(--bg);
@@ -190,6 +218,50 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
   font-size: 12px;
   color: var(--text3);
   line-height: 1.6;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  background: rgba(124, 106, 247, 0.1);
+}
+
+.theme-toggle-icon {
+  font-size: 22px;
+  color: var(--text2);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+  color: var(--amber);
+  text-shadow: 0 0 20px var(--amber);
+}
+
+:root.light .theme-toggle-icon {
+  color: var(--amber);
+  text-shadow: 0 0 15px var(--amber);
+}
+
+.theme-toggle-text {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.theme-toggle:hover .theme-toggle-text {
+  color: var(--text1);
 }
 
 /* ===== MAIN CONTENT ===== */

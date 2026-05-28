@@ -208,6 +208,37 @@ function updateToggleIcon(isCollapsed) {
   }
 }
 
+// ===== Theme Toggle =====
+function initTheme() {
+  const savedTheme = localStorage.getItem('lifep-theme') || 'dark';
+  const toggle = document.getElementById('theme-toggle');
+  const text = document.getElementById('theme-text');
+
+  // Apply saved theme
+  if (savedTheme === 'light') {
+    document.documentElement.classList.add('light');
+    text.textContent = 'โหมดมืด';
+  } else {
+    document.documentElement.classList.remove('light');
+    text.textContent = 'โหมดสว่าง';
+  }
+
+  // Toggle handler
+  toggle.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.toggle('light');
+    const newTheme = isLight ? 'light' : 'dark';
+
+    localStorage.setItem('lifep-theme', newTheme);
+    text.textContent = isLight ? 'โหมดมืด' : 'โหมดสว่าง';
+
+    // Add glow animation on toggle
+    toggle.querySelector('.theme-toggle-icon').style.transform = 'scale(1.2)';
+    setTimeout(() => {
+      toggle.querySelector('.theme-toggle-icon').style.transform = 'scale(1)';
+    }, 200);
+  });
+}
+
 // ===== Seed Test Data =====
 function seedTestData() {
   // Check if already has data
@@ -318,6 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
   DB.init();
   initNavigation();
   initSidebarToggle();
+  initTheme();
 
   // Seed test data if empty
   seedTestData();
