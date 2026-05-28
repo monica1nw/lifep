@@ -21,6 +21,8 @@
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/music.css">
+<link rel="stylesheet" href="css/games.css">
+<link rel="stylesheet" href="css/gallery.css">
 </head>
 <body>
 
@@ -60,6 +62,12 @@
       </div>
       <div class="nav-item" data-page="music">
         <i class="ti ti-music"></i> เพลง
+      </div>
+      <div class="nav-item" data-page="games">
+        <i class="ti ti-device-gamepad-2"></i> เกม
+      </div>
+      <div class="nav-item" data-page="gallery">
+        <i class="ti ti-photo"></i> รูปภาพ
       </div>
     </div>
 
@@ -293,6 +301,114 @@
       <div class="playlist" id="playlist"></div>
     </div>
 
+    <!-- ========= GAMES PAGE ========= -->
+    <div class="page" id="page-games">
+      <div class="page-header">
+        <div>
+          <div class="page-title">เกม</div>
+          <div class="page-subtitle">เก็บความทรงจำเกมที่เคยเล่น</div>
+        </div>
+        <button class="btn" id="btn-add-game"><i class="ti ti-plus"></i> เพิ่มเกม</button>
+      </div>
+
+      <!-- Add Game Form -->
+      <div class="game-form" id="game-form" style="display:none;">
+        <div class="form-group">
+          <label>ชื่อเกม</label>
+          <input type="text" id="game-name" placeholder="ชื่อเกมที่เล่น...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>แพลตฟอร์ม</label>
+            <select id="game-platform">
+              <option value="PC">PC</option>
+              <option value="PlayStation">PlayStation</option>
+              <option value="Xbox">Xbox</option>
+              <option value="Nintendo">Nintendo</option>
+              <option value="Mobile">Mobile</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>สถานะ</label>
+            <select id="game-status">
+              <option value="เล่นจบแล้ว">✅ เล่นจบแล้ว</option>
+              <option value="กำลังเล่น">🎮 กำลังเล่น</option>
+              <option value="เลิกเล่น">⏸️ เลิกเล่น</option>
+              <option value="อยากเล่น">💭 อยากเล่น</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>รูปปกเกม (URL)</label>
+          <input type="text" id="game-cover" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>บันทึก</label>
+          <textarea id="game-note" placeholder="ความประทับใจ หรืออะไรก็ได้..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="btn-save-game"><i class="ti ti-check"></i> บันทึก</button>
+          <button class="btn-outline" id="btn-cancel-game">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Games Grid -->
+      <div class="games-grid" id="games-grid"></div>
+    </div>
+
+    <!-- ========= GALLERY PAGE ========= -->
+    <div class="page" id="page-gallery">
+      <div class="page-header">
+        <div>
+          <div class="page-title">รูปภาพ</div>
+          <div class="page-subtitle">เก็บภาพความทรงจำที่อยากจำ</div>
+        </div>
+        <button class="btn" id="btn-add-photo"><i class="ti ti-plus"></i> เพิ่มรูป</button>
+      </div>
+
+      <!-- Add Photo Form -->
+      <div class="photo-form" id="photo-form" style="display:none;">
+        <div class="form-group">
+          <label>เลือกรูป</label>
+          <input type="file" id="photo-file" accept="image/*" multiple hidden>
+          <button class="btn-outline" id="btn-select-photo"><i class="ti ti-upload"></i> เลือกไฟล์รูป</button>
+          <div class="photo-preview" id="photo-preview"></div>
+        </div>
+        <div class="form-group">
+          <label>ชื่อ/คำอธิบาย</label>
+          <input type="text" id="photo-title" placeholder="คำอธิบายรูป...">
+        </div>
+        <div class="form-group">
+          <label>อัลบั้ม</label>
+          <select id="photo-album">
+            <option value="ทั่วไป">ทั่วไป</option>
+            <option value="ครอบครัว">ครอบครัว</option>
+            <option value="เพื่อน">เพื่อน</option>
+            <option value="ท่องเที่ยว">ท่องเที่ยว</option>
+            <option value="เก็บตก">เก็บตก</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="btn-save-photo"><i class="ti ti-check"></i> บันทึก</button>
+          <button class="btn-outline" id="btn-cancel-photo">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Album Filter -->
+      <div class="album-filter">
+        <button class="album-btn active" data-album="all">ทั้งหมด</button>
+        <button class="album-btn" data-album="ทั่วไป">ทั่วไป</button>
+        <button class="album-btn" data-album="ครอบครัว">ครอบครัว</button>
+        <button class="album-btn" data-album="เพื่อน">เพื่อน</button>
+        <button class="album-btn" data-album="ท่องเที่ยว">ท่องเที่ยว</button>
+        <button class="album-btn" data-album="เก็บตก">เก็บตก</button>
+      </div>
+
+      <!-- Photos Grid -->
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+
   </div>
 </div>
 
@@ -302,5 +418,7 @@
 <script src="js/calendar.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/music.js"></script>
+<script src="js/games.js"></script>
+<script src="js/gallery.js"></script>
 </body>
 </html>
