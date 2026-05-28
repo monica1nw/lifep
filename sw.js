@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifep-v1';
+const CACHE_NAME = 'lifep-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -15,7 +15,8 @@ const urlsToCache = [
   '/js/profile.js',
   '/js/music.js',
   '/favicon.svg',
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon.svg'
 ];
 
 // Install event
@@ -30,36 +31,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Fetch event
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          return response;
-        });
-      })
-  );
-});
-
-// Activate event
+// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -67,4 +46,34 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
+});
+
+// Handle skip waiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Clone the response
+        const responseToCache = response.clone();
+
+        // Update cache with new response
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache if offline
+        return caches.match(event.request);
+      })
+  );
 });

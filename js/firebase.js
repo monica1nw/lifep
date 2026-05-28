@@ -332,9 +332,28 @@ document.addEventListener('DOMContentLoaded', () => {
     navigator.serviceWorker.register('sw.js')
       .then((registration) => {
         console.log('Service Worker registered:', registration.scope);
+
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available - show refresh button
+              if (confirm('🆕 มีเวอร์ชันใหม่! กด OK เพื่อรีเฟรช')) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              }
+            }
+          });
+        });
       })
       .catch((error) => {
         console.log('Service Worker registration failed:', error);
       });
+
+    // Listen for controller change
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   }
 });
