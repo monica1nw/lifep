@@ -200,6 +200,76 @@ function seedTestData() {
   console.log('✅ Test data seeded!');
 }
 
+// ===== AFK MODE =====
+const AFKMode = {
+  timeout: 60000, // 1 นาที
+  timer: null,
+  clockInterval: null,
+  isActive: false,
+
+  thDays: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+  thMonths: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+
+  init() {
+    // Reset timer on user activity
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, () => this.resetTimer(), true);
+    });
+
+    // Exit AFK on click
+    document.getElementById('afk-overlay').addEventListener('click', () => this.exit());
+
+    // Start timer
+    this.resetTimer();
+  },
+
+  resetTimer() {
+    clearTimeout(this.timer);
+    if (this.isActive) return;
+
+    this.timer = setTimeout(() => this.enter(), this.timeout);
+  },
+
+  enter() {
+    this.isActive = true;
+    document.getElementById('afk-overlay').classList.add('active');
+    this.startClock();
+  },
+
+  exit() {
+    this.isActive = false;
+    document.getElementById('afk-overlay').classList.remove('active');
+    this.stopClock();
+    this.resetTimer();
+  },
+
+  startClock() {
+    this.updateClock();
+    this.clockInterval = setInterval(() => this.updateClock(), 1000);
+  },
+
+  stopClock() {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+      this.clockInterval = null;
+    }
+  },
+
+  updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const day = this.thDays[now.getDay()];
+    const date = now.getDate();
+    const month = this.thMonths[now.getMonth()];
+    const year = now.getFullYear() + 543;
+
+    document.getElementById('afk-time').textContent = `${hours}:${minutes}`;
+    document.getElementById('afk-date').textContent = `${day} ${date} ${month} ${year}`;
+  }
+};
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   DB.init();
@@ -209,4 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
   seedTestData();
 
   DB.updateBadges();
+
+  // Initialize AFK mode
+  AFKMode.init();
 });
