@@ -6,6 +6,12 @@ const GalleryModule = {
   pendingFiles: [],
   currentAlbum: 'all',
 
+  // Cloudinary config
+  cloudinary: {
+    cloudName: 'ddgpq2zef',
+    uploadPreset: 'lifep_upload'
+  },
+
   init() {
     this.photos = this.load();
     this.bindEvents();
@@ -70,12 +76,12 @@ const GalleryModule = {
       const reader = new FileReader();
       reader.onload = (e) => {
         const id = Date.now() + Math.random();
-        this.pendingFiles.push({ id, data: e.target.result });
+        this.pendingFiles.push({ id, file, preview: e.target.result });
 
         preview.innerHTML += `
           <div class="photo-preview-item" data-id="${id}">
             <img src="${e.target.result}" alt="">
-            <button onclick="GalleryModule.removePending(${id})"><i class="ti ti-x"></i></button>
+            <button type="button" onclick="GalleryModule.removePending(${id})"><i class="ti ti-x"></i></button>
           </div>
         `;
       };
@@ -88,7 +94,7 @@ const GalleryModule = {
     document.querySelector(`.photo-preview-item[data-id="${id}"]`)?.remove();
   },
 
-  save() {
+  async save() {
     if (this.pendingFiles.length === 0) {
       alert('กรุณาเลือกรูป');
       return;
@@ -96,20 +102,65 @@ const GalleryModule = {
 
     const title = document.getElementById('photo-title').value.trim();
     const album = document.getElementById('photo-album').value;
+    const saveBtn = document.getElementById('btn-save-photo');
 
-    this.pendingFiles.forEach(file => {
-      this.photos.unshift({
-        id: Date.now() + Math.random(),
-        title: title || 'ไม่มีชื่อ',
-        album,
-        data: file.data,
-        createdAt: new Date().toISOString()
-      });
-    });
+    // Show loading
+    saveBtn.innerHTML = '<i class="ti ti-loader-2"></i> กำลังอัปโหลด...';
+    saveBtn.disabled = true;
 
-    this.persist();
-    this.render();
-    this.toggleForm(false);
+    try {
+      for (const pending of this.pendingFiles) {
+        const url = await this.uploadToCloudinary(pending.file);
+
+        if (url) {
+          this.photos.unshift({
+            id: Date.now() + Math.random(),
+            title: title || 'ไม่มีชื่อ',
+            album,
+            url,
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+
+      this.persist();
+      this.render();
+      this.toggleForm(false);
+    } catch (error) {
+      alert('อัปโหลดไม่สำเร็จ: ' + error.message);
+    } finally {
+      saveBtn.innerHTML = '<i class="ti ti-check"></i> บันทึก';
+      saveBtn.disabled = false;
+    }
+  },
+
+  async uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.cloudinary.uploadPreset);
+
+    console.log('Uploading to Cloudinary...');
+    console.log('Cloud Name:', this.cloudinary.cloudName);
+    console.log('Upload Preset:', this.cloudinary.uploadPreset);
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${this.cloudinary.cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      );
+
+      const data = await response.json();
+      console.log('Response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Upload failed');
+      }
+
+      return data.secure_url;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   },
 
   delete(id) {
@@ -125,10 +176,6 @@ const GalleryModule = {
   },
 
   persist() {
-    // Limit storage - only keep last 50 photos
-    if (this.photos.length > 50) {
-      this.photos = this.photos.slice(0, 50);
-    }
     localStorage.setItem(this.storageKey, JSON.stringify(this.photos));
   },
 
@@ -156,7 +203,7 @@ const GalleryModule = {
 
     grid.innerHTML = filtered.map(photo => `
       <div class="photo-card" data-id="${photo.id}">
-        <img src="${photo.data}" alt="${this.escapeHtml(photo.title)}">
+        <img src="${photo.url}" alt="${this.escapeHtml(photo.title)}">
         <div class="photo-card-overlay">
           <div class="photo-card-title">${this.escapeHtml(photo.title)}</div>
         </div>
@@ -188,7 +235,7 @@ const GalleryModule = {
     const modal = document.createElement('div');
     modal.className = 'photo-modal active';
     modal.innerHTML = `
-      <img src="${photo.data}" alt="">
+      <img src="${photo.url}" alt="">
       <button class="photo-modal-close"><i class="ti ti-x"></i></button>
       <div class="photo-modal-info">
         <div class="photo-modal-title">${this.escapeHtml(photo.title)}</div>
