@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/todo.css">
+<link rel="stylesheet" href="css/notes.css">
+<link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="logo">
+      ✦ LifeP
+      <span>Personal Dashboard</span>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">เมนูหลัก</div>
+      <div class="nav-item active" data-page="todo">
+        <i class="ti ti-checklist"></i> งาน & To-Do
+        <span class="notif-badge" id="badge-todo">0</span>
+      </div>
+      <div class="nav-item" data-page="notes">
+        <i class="ti ti-note"></i> โน้ต
+        <span class="notif-badge" id="badge-notes">0</span>
+      </div>
+      <div class="nav-item" data-page="calendar">
+        <i class="ti ti-calendar"></i> ปฏิทิน
+        <span class="notif-badge" id="badge-events">0</span>
+      </div>
+      <div class="nav-item" data-page="profile">
+        <i class="ti ti-user"></i> ไว
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <p>ข้อมูลทั้งหมดเก็บใน browser ของคุณ ใช้ได้ offline</p>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ========= TODO PAGE ========= -->
+    <div class="page active" id="page-todo">
+      <div class="page-header">
+        <div>
+          <div class="page-title">งาน & To-Do List</div>
+          <div class="page-subtitle">จัดการงานของวันนี้ให้เสร็จสิ้น</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">งานทั้งหมด</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-done" style="color:#4ade80">0</div><div class="stat-label">เสร็จแล้ว</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-left" style="color:#f87171">0</div><div class="stat-label">ค้างอยู่</div></div>
+      </div>
+
+      <div class="todo-input-row">
+        <input type="text" id="todo-input" placeholder="เพิ่มงานใหม่...">
+        <button class="btn" id="btn-add-todo"><i class="ti ti-plus"></i> เพิ่มงาน</button>
+      </div>
+      <div class="priority-row">
+        <label>ความสำคัญ:</label>
+        <button class="priority-btn" data-p="สูง">🔴 สูง</button>
+        <button class="priority-btn" data-p="กลาง">🟡 กลาง</button>
+        <button class="priority-btn selected" data-p="ต่ำ">🟢 ต่ำ</button>
+      </div>
+
+      <div class="section-label">ยังไม่เสร็จ</div>
+      <div id="todo-active"></div>
+      <div class="section-label">เสร็จแล้ว ✓</div>
+      <div id="todo-done"></div>
+    </div>
+
+    <!-- ========= NOTES PAGE ========= -->
+    <div class="page" id="page-notes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">โน้ต</div>
+          <div class="page-subtitle">บันทึกสิ่งที่อยากได้ อยากทำ และไอเดียต่างๆ</div>
+        </div>
+      </div>
+
+      <div class="note-editor">
+        <input type="text" id="note-title" placeholder="หัวข้อโน้ต...">
+        <textarea id="note-body" placeholder="เขียนอะไรก็ได้ที่อยากจำ... สิ่งที่อยากได้ สิ่งที่อยากทำ แพลน ไอเดีย"></textarea>
+        <div class="note-editor-footer">
+          <select id="note-tag">
+            <option value="ทั่วไป">🏷 ทั่วไป</option>
+            <option value="อยากได้">🛒 อยากได้</option>
+            <option value="อยากทำ">✨ อยากทำ</option>
+            <option value="ไอเดีย">💡 ไอเดีย</option>
+            <option value="สำคัญ">⭐ สำคัญ</option>
+          </select>
+          <button class="btn" id="btn-add-note"><i class="ti ti-device-floppy"></i> บันทึก</button>
+        </div>
+      </div>
+
+      <div class="section-label">โน้ตทั้งหมด</div>
+      <div class="notes-grid" id="notes-grid"></div>
+    </div>
+
+    <!-- ========= CALENDAR PAGE ========= -->
+    <div class="page" id="page-calendar">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ปฏิทิน</div>
+          <div class="page-subtitle">จัดการกิจกรรมและนัดหมายของคุณ</div>
+        </div>
+        <button class="btn" id="btn-toggle-event-form"><i class="ti ti-plus"></i> เพิ่มกิจกรรม</button>
+      </div>
+
+      <div class="add-event-panel" id="event-form">
+        <h3><i class="ti ti-calendar-plus" style="vertical-align:-2px;margin-right:6px"></i>เพิ่มกิจกรรมใหม่</h3>
+        <div class="form-grid">
+          <input type="text" id="ev-name" placeholder="ชื่อกิจกรรม...">
+          <input type="date" id="ev-date">
+          <input type="time" id="ev-time">
+        </div>
+        <input type="text" id="ev-note" placeholder="บันทึกเพิ่มเติม (ไม่บังคับ)..." style="width:100%;margin-bottom:12px">
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btn-add-event"><i class="ti ti-check"></i> บันทึก</button>
+          <button class="btn-outline" id="btn-cancel-event">ยกเลิก</button>
+        </div>
+      </div>
+
+      <div class="cal-header">
+        <button class="cal-nav" id="btn-prev-month">‹</button>
+        <div class="cal-month-title" id="cal-month-label"></div>
+        <button class="cal-nav" id="btn-next-month">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+
+      <div class="section-label">กิจกรรมที่กำลังจะมาถึง</div>
+      <div id="events-list"></div>
+    </div>
+
+    <!-- ========= PROFILE PAGE ========= -->
+    <div class="page" id="page-profile">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ไว</div>
+          <div class="page-subtitle">เก็บข้อมูลส่วนตัวของคุณ</div>
+        </div>
+      </div>
+
+      <div class="profile-container">
+        <!-- Profile Photo -->
+        <div class="profile-photo-section">
+          <div class="profile-photo" id="profile-photo">
+            <i class="ti ti-user"></i>
+          </div>
+          <input type="file" id="profile-photo-input" accept="image/*" hidden>
+          <button class="btn-outline" id="btn-change-photo"><i class="ti ti-camera"></i> เปลี่ยนรูป</button>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="profile-form">
+          <div class="form-group">
+            <label>ชื่อ</label>
+            <input type="text" id="profile-name" placeholder="ชื่อของคุณ...">
+          </div>
+          <div class="form-group">
+            <label>ที่อยู่</label>
+            <textarea id="profile-address" placeholder="ที่อยู่ของคุณ..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>เบอร์โทร</label>
+              <input type="text" id="profile-phone" placeholder="เบอร์โทร...">
+            </div>
+            <div class="form-group">
+              <label>อีเมล</label>
+              <input type="text" id="profile-email" placeholder="อีเมล...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>วันเกิด</label>
+            <input type="date" id="profile-birthday">
+          </div>
+          <div class="form-group">
+            <label>บันทึกเพิ่มเติม</label>
+            <textarea id="profile-note" placeholder="ข้อมูลอื่นๆ ที่อยากจำ..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn" id="btn-save-profile"><i class="ti ti-device-floppy"></i> บันทึก</button>
+            <span class="save-status" id="save-status"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/firebase.js"></script>
+<script src="js/todo.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>
