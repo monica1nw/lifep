@@ -137,6 +137,23 @@ const DB = {
     }
   },
 
+  async uploadAllLocalToCloud() {
+    if (!this.useFirebase || !this.db) {
+      throw new Error('Firebase ยังไม่พร้อม');
+    }
+
+    const uploaded = [];
+    for (const collection of this.COLLECTIONS) {
+      const localData = this.get(collection);
+      if (!this.isEmptyValue(localData, collection)) {
+        await this.writeCloudDoc(collection, localData);
+        uploaded.push(collection);
+      }
+    }
+
+    return uploaded;
+  },
+
   async syncFromCloud(collection) {
     const localData = this.get(collection);
     const docRef = this.db.collection('lifep').doc(collection);
@@ -231,6 +248,8 @@ const DB = {
   }
 };
 
+window.LifePDB = DB;
+
 // ===== Utility Functions =====
 function escHtml(s) {
   return String(s)
@@ -323,6 +342,58 @@ function initTheme() {
   });
 }
 
+// ===== Cloud Sync Status =====
+function initCloudSyncStatus() {
+  const footer = document.querySelector('.sidebar-footer');
+  if (!footer || document.getElementById('cloud-sync-panel')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'cloud-sync-panel';
+  panel.style.cssText = 'margin:12px 0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:12px;color:var(--text2)';
+  panel.innerHTML = `
+    <div id="cloud-sync-status" style="margin-bottom:8px">Firebase: กำลังตรวจสอบ...</div>
+    <button id="btn-cloud-sync-now" class="btn-outline" type="button" style="width:100%;font-size:12px;padding:8px 10px">
+      <i class="ti ti-cloud-upload"></i> Sync now
+    </button>
+  `;
+
+  footer.prepend(panel);
+
+  const status = document.getElementById('cloud-sync-status');
+  const button = document.getElementById('btn-cloud-sync-now');
+
+  const updateStatus = () => {
+    const counts = DB.COLLECTIONS
+      .map(collection => {
+        const value = DB.get(collection);
+        if (Array.isArray(value)) return `${collection}:${value.length}`;
+        return `${collection}:${value && Object.keys(value).length ? 1 : 0}`;
+      })
+      .join(' ');
+
+    status.textContent = `${DB.useFirebase ? 'Firebase: พร้อม' : 'Firebase: ยังไม่พร้อม'} | ${counts}`;
+  };
+
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    status.textContent = 'กำลัง sync ข้อมูลขึ้น Firebase...';
+
+    try {
+      const uploaded = await DB.uploadAllLocalToCloud();
+      status.textContent = uploaded.length
+        ? `sync สำเร็จ: ${uploaded.join(', ')}`
+        : 'ไม่มีข้อมูล local ให้ sync';
+    } catch (error) {
+      status.textContent = 'sync ไม่สำเร็จ: ' + error.message;
+    } finally {
+      button.disabled = false;
+      setTimeout(updateStatus, 2500);
+    }
+  });
+
+  DB.onReady(updateStatus);
+}
+
 // ===== AFK MODE =====
 const AFKMode = {
   timeout: 60000,
@@ -393,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebarToggle();
   initTheme();
   AFKMode.init();
+  initCloudSyncStatus();
   DB.init();
 
   if ('serviceWorker' in navigator) {
