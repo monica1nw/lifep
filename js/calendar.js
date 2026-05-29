@@ -235,4 +235,5 @@ function renderCalendar() {
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   CalendarModule.init();
+  DB.onReady(() => CalendarModule.render());
 });

@@ -1,7 +1,7 @@
 // ===== GAMES MODULE =====
 
 const GamesModule = {
-  storageKey: 'myspace-games',
+  storageKey: 'games',
   games: [],
 
   init() {
@@ -68,12 +68,11 @@ const GamesModule = {
   },
 
   load() {
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
+    return DB.get(this.storageKey);
   },
 
   persist() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.games));
+    DB.save(this.storageKey, this.games);
   },
 
   escapeHtml(s) {
@@ -170,3 +169,9 @@ const GamesModule = {
 };
 
 document.addEventListener('DOMContentLoaded', () => GamesModule.init());
+document.addEventListener('DOMContentLoaded', () => {
+  DB.onReady(() => {
+    GamesModule.games = GamesModule.load();
+    GamesModule.render();
+  });
+});

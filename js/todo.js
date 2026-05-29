@@ -116,4 +116,5 @@ const TodoModule = {
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   TodoModule.init();
+  DB.onReady(() => TodoModule.render());
 });

@@ -88,4 +88,5 @@ const NotesModule = {
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   NotesModule.init();
+  DB.onReady(() => NotesModule.render());
 });

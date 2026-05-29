@@ -1,136 +1,233 @@
-// ===== FIREBASE & LOCALSTORAGE DATABASE MODULE =====
+// ===== FIREBASE & LOCAL CACHE DATABASE MODULE =====
 
 const DB = {
-  // Firebase config (กรอกข้อมูลของคุณเอง)
-  firebaseConfig: null,
+  firebaseConfig: window.LIFEP_FIREBASE_CONFIG || null,
+  app: null,
   db: null,
   useFirebase: false,
+  ready: false,
+  listeners: [],
 
-  // Keys สำหรับ localStorage
   KEYS: {
     todos: 'myspace-todos',
     notes: 'myspace-notes',
-    events: 'myspace-events'
+    events: 'myspace-events',
+    profile: 'myspace-profile',
+    music: 'myspace-music',
+    games: 'myspace-games',
+    gallery: 'myspace-gallery'
   },
 
-  // Initialize
+  DEFAULTS: {
+    todos: [],
+    notes: [],
+    events: [],
+    profile: {},
+    music: [],
+    games: [],
+    gallery: []
+  },
+
+  COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'games', 'gallery'],
+
   async init() {
-    // ลองเชื่อม Firebase ถ้ามี config
-    if (this.firebaseConfig) {
-      try {
-        // TODO: เพิ่ม Firebase initialization เมื่อมี config
-        // this.db = firebase.firestore();
-        // this.useFirebase = true;
-        console.log('Firebase initialized');
-      } catch (error) {
-        console.warn('Firebase init failed, using localStorage:', error);
-        this.useFirebase = false;
-      }
+    if (!this.hasFirebaseConfig() || !window.firebase) {
+      console.warn('LifeP: Firebase config is missing, using local cache only.');
+      this.ready = true;
+      this.notify();
+      return;
+    }
+
+    try {
+      this.app = firebase.apps.length ? firebase.app() : firebase.initializeApp(this.firebaseConfig);
+      this.db = firebase.firestore();
+      this.useFirebase = true;
+      await this.syncAllFromCloud();
+      console.log('LifeP: Firebase sync ready.');
+    } catch (error) {
+      console.warn('LifeP: Firebase init failed, using local cache only:', error);
+      this.useFirebase = false;
+    } finally {
+      this.ready = true;
+      this.notify();
     }
   },
 
-  // ===== CRUD Operations =====
-
-  // Get all items
-  get(collection) {
-    const data = localStorage.getItem(this.KEYS[collection]);
-    return data ? JSON.parse(data) : [];
+  onReady(callback) {
+    this.listeners.push(callback);
+    if (this.ready) callback();
   },
 
-  // Save all items
+  notify() {
+    this.updateBadges();
+    this.listeners.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.warn('LifeP: render callback failed:', error);
+      }
+    });
+  },
+
+  get(collection) {
+    const key = this.KEYS[collection];
+    if (!key) return [];
+
+    const data = localStorage.getItem(key);
+    if (!data) return this.cloneDefault(collection);
+
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      console.warn(`LifeP: failed to read ${collection} cache:`, error);
+      return this.cloneDefault(collection);
+    }
+  },
+
   save(collection, data) {
-    localStorage.setItem(this.KEYS[collection], JSON.stringify(data));
+    const key = this.KEYS[collection];
+    if (!key) return;
+
+    localStorage.setItem(key, JSON.stringify(data));
     this.updateBadges();
 
-    // Sync to Firebase ถ้าเชื่อมต่อแล้ว
     if (this.useFirebase && this.db) {
-      this.syncToFirebase(collection, data);
+      this.syncToCloud(collection, data);
     }
   },
 
-  // Add single item
   add(collection, item) {
-    const data = this.get(collection);
+    const data = this.ensureArray(collection);
     const newItem = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       ...item,
       createdAt: new Date().toISOString()
     };
+
     data.unshift(newItem);
     this.save(collection, data);
     return newItem;
   },
 
-  // Update single item
   update(collection, id, updates) {
-    const data = this.get(collection);
-    const index = data.findIndex(item => item.id === id);
-    if (index !== -1) {
-      data[index] = { ...data[index], ...updates, updatedAt: new Date().toISOString() };
-      this.save(collection, data);
-      return data[index];
-    }
-    return null;
+    const data = this.ensureArray(collection);
+    const index = data.findIndex(item => Number(item.id) === Number(id));
+
+    if (index === -1) return null;
+
+    data[index] = { ...data[index], ...updates, updatedAt: new Date().toISOString() };
+    this.save(collection, data);
+    return data[index];
   },
 
-  // Delete single item
   delete(collection, id) {
-    const data = this.get(collection);
-    const filtered = data.filter(item => item.id !== id);
+    const data = this.ensureArray(collection);
+    const filtered = data.filter(item => Number(item.id) !== Number(id));
     this.save(collection, filtered);
     return filtered;
   },
 
-  // Get single item by ID
   getById(collection, id) {
+    return this.ensureArray(collection).find(item => Number(item.id) === Number(id)) || null;
+  },
+
+  async syncAllFromCloud() {
+    for (const collection of this.COLLECTIONS) {
+      await this.syncFromCloud(collection);
+    }
+  },
+
+  async syncFromCloud(collection) {
+    const localData = this.get(collection);
+    const docRef = this.db.collection('lifep').doc(collection);
+    const snapshot = await docRef.get();
+
+    if (snapshot.exists) {
+      const remoteData = snapshot.data()?.value;
+      if (remoteData !== undefined) {
+        localStorage.setItem(this.KEYS[collection], JSON.stringify(remoteData));
+      }
+      return;
+    }
+
+    if (!this.isEmptyValue(localData, collection)) {
+      await this.writeCloudDoc(collection, localData);
+    }
+  },
+
+  async syncToCloud(collection, data) {
+    try {
+      await this.writeCloudDoc(collection, data);
+    } catch (error) {
+      console.warn(`LifeP: failed to sync ${collection}:`, error);
+    }
+  },
+
+  async writeCloudDoc(collection, data) {
+    await this.db.collection('lifep').doc(collection).set({
+      value: data,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  },
+
+  ensureArray(collection) {
     const data = this.get(collection);
-    return data.find(item => item.id === id) || null;
+    return Array.isArray(data) ? data : [];
   },
 
-  // ===== Firebase Sync =====
-  async syncToFirebase(collection, data) {
-    // TODO: Implement Firebase sync
-    // await this.db.collection(collection).doc('data').set({ items: data });
+  cloneDefault(collection) {
+    const value = this.DEFAULTS[collection];
+    return Array.isArray(value) ? [...value] : { ...value };
   },
 
-  async syncFromFirebase(collection) {
-    // TODO: Implement Firebase sync
-    // const doc = await this.db.collection(collection).doc('data').get();
-    // if (doc.exists) {
-    //   localStorage.setItem(this.KEYS[collection], JSON.stringify(doc.data().items));
-    // }
+  isEmptyValue(value, collection) {
+    if (Array.isArray(value)) return value.length === 0;
+    if (collection === 'profile') return !value || Object.keys(value).length === 0;
+    return !value;
   },
 
-  // ===== Badges =====
   updateBadges() {
-    const todos = this.get('todos');
-    const notes = this.get('notes');
-    const events = this.get('events');
+    const todoBadge = document.getElementById('badge-todo');
+    const notesBadge = document.getElementById('badge-notes');
+    const eventsBadge = document.getElementById('badge-events');
 
-    document.getElementById('badge-todo').textContent = todos.filter(t => !t.done).length;
-    document.getElementById('badge-notes').textContent = notes.length;
-    document.getElementById('badge-events').textContent = events.length;
+    if (!todoBadge || !notesBadge || !eventsBadge) return;
+
+    const todos = this.ensureArray('todos');
+    const notes = this.ensureArray('notes');
+    const events = this.ensureArray('events');
+
+    todoBadge.textContent = todos.filter(t => !t.done).length;
+    notesBadge.textContent = notes.length;
+    eventsBadge.textContent = events.length;
   },
 
-  // ===== Utilities =====
   clearAll() {
     Object.values(this.KEYS).forEach(key => localStorage.removeItem(key));
-    this.updateBadges();
+    this.notify();
   },
 
   exportData() {
-    return {
-      todos: this.get('todos'),
-      notes: this.get('notes'),
-      events: this.get('events'),
-      exportedAt: new Date().toISOString()
-    };
+    return this.COLLECTIONS.reduce((data, collection) => {
+      data[collection] = this.get(collection);
+      return data;
+    }, { exportedAt: new Date().toISOString() });
   },
 
   importData(data) {
-    if (data.todos) this.save('todos', data.todos);
-    if (data.notes) this.save('notes', data.notes);
-    if (data.events) this.save('events', data.events);
+    this.COLLECTIONS.forEach(collection => {
+      if (data[collection] !== undefined) this.save(collection, data[collection]);
+    });
+    this.notify();
+  },
+
+  hasFirebaseConfig() {
+    return Boolean(
+      this.firebaseConfig &&
+      this.firebaseConfig.apiKey &&
+      this.firebaseConfig.projectId &&
+      this.firebaseConfig.appId
+    );
   }
 };
 
@@ -149,20 +246,16 @@ function initNavigation() {
     item.addEventListener('click', () => {
       const page = item.dataset.page;
 
-      // Update active states
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-      // Show selected page
       document.getElementById('page-' + page).classList.add('active');
       item.classList.add('active');
 
-      // Refresh calendar when switching to that page
       if (page === 'calendar' && typeof renderCalendar === 'function') {
         renderCalendar();
       }
 
-      // Close sidebar on mobile after navigation
       if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.add('collapsed');
         updateToggleIcon(true);
@@ -181,13 +274,11 @@ function initSidebarToggle() {
     updateToggleIcon(sidebar.classList.contains('collapsed'));
   });
 
-  // Close sidebar by default on mobile
   if (window.innerWidth <= 768) {
     sidebar.classList.add('collapsed');
     updateToggleIcon(true);
   }
 
-  // Handle resize
   window.addEventListener('resize', () => {
     if (window.innerWidth <= 768) {
       sidebar.classList.add('collapsed');
@@ -201,11 +292,7 @@ function initSidebarToggle() {
 
 function updateToggleIcon(isCollapsed) {
   const toggle = document.getElementById('sidebar-toggle');
-  if (isCollapsed) {
-    toggle.innerHTML = '<i class="ti ti-menu-2"></i>';
-  } else {
-    toggle.innerHTML = '<i class="ti ti-x"></i>';
-  }
+  toggle.innerHTML = isCollapsed ? '<i class="ti ti-menu-2"></i>' : '<i class="ti ti-x"></i>';
 }
 
 // ===== Theme Toggle =====
@@ -214,7 +301,6 @@ function initTheme() {
   const toggle = document.getElementById('theme-toggle');
   const text = document.getElementById('theme-text');
 
-  // Apply saved theme
   if (savedTheme === 'light') {
     document.documentElement.classList.add('light');
     text.textContent = 'โหมดมืด';
@@ -223,7 +309,6 @@ function initTheme() {
     text.textContent = 'โหมดสว่าง';
   }
 
-  // Toggle handler
   toggle.addEventListener('click', () => {
     const isLight = document.documentElement.classList.toggle('light');
     const newTheme = isLight ? 'light' : 'dark';
@@ -231,7 +316,6 @@ function initTheme() {
     localStorage.setItem('lifep-theme', newTheme);
     text.textContent = isLight ? 'โหมดมืด' : 'โหมดสว่าง';
 
-    // Add glow animation on toggle
     toggle.querySelector('.theme-toggle-icon').style.transform = 'scale(1.2)';
     setTimeout(() => {
       toggle.querySelector('.theme-toggle-icon').style.transform = 'scale(1)';
@@ -239,44 +323,9 @@ function initTheme() {
   });
 }
 
-// ===== Seed Test Data =====
-function seedTestData() {
-  // Check if already has data
-  if (DB.get('todos').length === 0) {
-    DB.save('todos', [
-      { id: 1, text: 'ทำโปรเจกต์ MySpace เสร็จ', done: false, priority: 'สูง', createdAt: new Date().toISOString() },
-      { id: 2, text: 'อ่านหนังสือ JavaScript', done: true, priority: 'กลาง', createdAt: new Date().toISOString() },
-      { id: 3, text: 'ออกกำลังกาย 30 นาที', done: false, priority: 'ต่ำ', createdAt: new Date().toISOString() }
-    ]);
-  }
-
-  if (DB.get('notes').length === 0) {
-    DB.save('notes', [
-      { id: 1, title: 'ไอเดียโปรเจกต์ใหม่', body: 'อยากทำแอปจดบันทึกค่าใช้จ่ายรายวัน พร้อมกราฟสรุป', tag: 'ไอเดีย', createdAt: new Date().toISOString() },
-      { id: 2, title: 'ของที่อยากได้', body: 'Keyboard mechanical, Mouse Logitech, Monitor 27 inch', tag: 'อยากได้', createdAt: new Date().toISOString() }
-    ]);
-  }
-
-  if (DB.get('events').length === 0) {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
-
-    DB.save('events', [
-      { id: 1, name: 'ประชุมทีม', date: tomorrow.toISOString().split('T')[0], time: '10:00', note: 'ห้องประชุม A', createdAt: new Date().toISOString() },
-      { id: 2, name: 'ดูหนังกับเพื่อน', date: nextWeek.toISOString().split('T')[0], time: '19:00', note: 'Siam Paragon', createdAt: new Date().toISOString() }
-    ]);
-  }
-
-  DB.updateBadges();
-  console.log('✅ Test data seeded!');
-}
-
 // ===== AFK MODE =====
 const AFKMode = {
-  timeout: 60000, // 1 นาที
+  timeout: 60000,
   timer: null,
   clockInterval: null,
   isActive: false,
@@ -285,23 +334,18 @@ const AFKMode = {
   thMonths: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
 
   init() {
-    // Reset timer on user activity
     const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
     events.forEach(event => {
       document.addEventListener(event, () => this.resetTimer(), true);
     });
 
-    // Exit AFK on click
     document.getElementById('afk-overlay').addEventListener('click', () => this.exit());
-
-    // Start timer
     this.resetTimer();
   },
 
   resetTimer() {
     clearTimeout(this.timer);
     if (this.isActive) return;
-
     this.timer = setTimeout(() => this.enter(), this.timeout);
   },
 
@@ -344,34 +388,23 @@ const AFKMode = {
   }
 };
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-  DB.init();
   initNavigation();
   initSidebarToggle();
   initTheme();
-
-  // Seed test data if empty
-  seedTestData();
-
-  DB.updateBadges();
-
-  // Initialize AFK mode
   AFKMode.init();
+  DB.init();
 
-  // Register Service Worker for PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then((registration) => {
         console.log('Service Worker registered:', registration.scope);
 
-        // Check for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available - show refresh button
-              if (confirm('🆕 มีเวอร์ชันใหม่! กด OK เพื่อรีเฟรช')) {
+              if (confirm('มีเวอร์ชันใหม่! กด OK เพื่อรีเฟรช')) {
                 newWorker.postMessage({ type: 'SKIP_WAITING' });
                 window.location.reload();
               }
@@ -383,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Service Worker registration failed:', error);
       });
 
-    // Listen for controller change
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
     });

@@ -1,13 +1,13 @@
 // ===== GALLERY MODULE =====
 
 const GalleryModule = {
-  storageKey: 'myspace-gallery',
+  storageKey: 'gallery',
   photos: [],
   pendingFiles: [],
   currentAlbum: 'all',
 
   // Cloudinary config
-  cloudinary: {
+  cloudinary: window.LIFEP_CLOUDINARY_CONFIG || {
     cloudName: 'ddgpq2zef',
     uploadPreset: 'lifep_upload'
   },
@@ -171,12 +171,11 @@ const GalleryModule = {
   },
 
   load() {
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
+    return DB.get(this.storageKey);
   },
 
   persist() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.photos));
+    DB.save(this.storageKey, this.photos);
   },
 
   escapeHtml(s) {
@@ -254,3 +253,9 @@ const GalleryModule = {
 };
 
 document.addEventListener('DOMContentLoaded', () => GalleryModule.init());
+document.addEventListener('DOMContentLoaded', () => {
+  DB.onReady(() => {
+    GalleryModule.photos = GalleryModule.load();
+    GalleryModule.render();
+  });
+});

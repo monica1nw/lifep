@@ -1,7 +1,11 @@
 // ===== PROFILE MODULE =====
 
 const ProfileModule = {
-  storageKey: 'myspace-profile',
+  storageKey: 'profile',
+  cloudinary: window.LIFEP_CLOUDINARY_CONFIG || {
+    cloudName: 'ddgpq2zef',
+    uploadPreset: 'lifep_upload'
+  },
 
   // Initialize
   init() {
@@ -27,7 +31,7 @@ const ProfileModule = {
   },
 
   // Handle photo upload
-  handlePhotoUpload(e) {
+  async handlePhotoUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -43,13 +47,36 @@ const ProfileModule = {
       return;
     }
 
-    // Read and save as base64
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      this.updatePhoto(event.target.result);
+    try {
+      this.showSaveStatus('กำลังอัปโหลดรูป...');
+      const imageUrl = await this.uploadToCloudinary(file);
+      this.updatePhoto(imageUrl);
       this.save();
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Profile upload error:', error);
+      alert('อัปโหลดรูปโปรไฟล์ไม่สำเร็จ: ' + error.message);
+      this.showSaveStatus('');
+    } finally {
+      e.target.value = '';
+    }
+  },
+
+  async uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.cloudinary.uploadPreset);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${this.cloudinary.cloudName}/image/upload`,
+      { method: 'POST', body: formData }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Upload failed');
+    }
+
+    return data.secure_url;
   },
 
   // Update photo display
@@ -75,16 +102,14 @@ const ProfileModule = {
       updatedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(this.storageKey, JSON.stringify(profile));
+    DB.save(this.storageKey, profile);
     this.showSaveStatus('บันทึกแล้ว ✓');
   },
 
   // Load profile
   load() {
-    const data = localStorage.getItem(this.storageKey);
-    if (!data) return;
-
-    const profile = JSON.parse(data);
+    const profile = DB.get(this.storageKey);
+    if (!profile || Object.keys(profile).length === 0) return;
 
     document.getElementById('profile-name').value = profile.name || '';
     document.getElementById('profile-address').value = profile.address || '';
@@ -118,4 +143,5 @@ const ProfileModule = {
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   ProfileModule.init();
+  DB.onReady(() => ProfileModule.load());
 });

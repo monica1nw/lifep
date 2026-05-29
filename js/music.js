@@ -1,7 +1,7 @@
 // ===== MUSIC MODULE =====
 
 const MusicModule = {
-  storageKey: 'myspace-music',
+  storageKey: 'music',
   playlist: [],
   currentTrack: null,
   audioPlayer: null,
@@ -70,21 +70,21 @@ const MusicModule = {
   },
 
   // Handle file upload
-  handleFileUpload(e) {
+  async handleFileUpload(e) {
     const files = e.target.files;
     if (!files.length) return;
 
-    Array.from(files).forEach(file => {
+    for (const file of Array.from(files)) {
       if (!file.type.startsWith('audio/')) return;
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
+      try {
+        const url = await this.uploadAudioToCloudinary(file);
         const track = {
           id: Date.now() + Math.random(),
           type: 'file',
           title: file.name.replace(/\.[^/.]+$/, ''),
           artist: 'ไม่ทราบศิลปิน',
-          data: event.target.result,
+          url,
           lyrics: '',
           createdAt: new Date().toISOString()
         };
@@ -96,11 +96,35 @@ const MusicModule = {
         if (this.playlist.length === 1) {
           this.playTrack(track.id);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (error) {
+        console.error('Music upload error:', error);
+        alert('อัปโหลดเพลงไม่สำเร็จ: ' + error.message);
+      }
+    }
 
     e.target.value = '';
+  },
+
+  async uploadAudioToCloudinary(file) {
+    const cloudinary = window.LIFEP_CLOUDINARY_CONFIG || {
+      cloudName: 'ddgpq2zef',
+      uploadPreset: 'lifep_upload'
+    };
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinary.uploadPreset);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudinary.cloudName}/auto/upload`,
+      { method: 'POST', body: formData }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Upload failed');
+    }
+
+    return data.secure_url;
   },
 
   // Add YouTube
@@ -222,7 +246,7 @@ const MusicModule = {
 
     if (track.type === 'file') {
       document.getElementById('now-playing-cover').innerHTML = '<i class="ti ti-music"></i>';
-      this.audioPlayer.src = track.data;
+      this.audioPlayer.src = track.url || track.data;
       this.audioPlayer.play();
     } else if (track.type === 'youtube') {
       document.getElementById('now-playing-cover').innerHTML = `
@@ -366,17 +390,14 @@ const MusicModule = {
 
   // Load playlist from storage
   loadPlaylist() {
-    const data = localStorage.getItem(this.storageKey);
-    if (!data) return [];
-
-    const tracks = JSON.parse(data);
-    return tracks.filter(t => t.type === 'youtube' || t.type === 'spotify');
+    const tracks = DB.get(this.storageKey);
+    return tracks.filter(t => t.type === 'youtube' || t.type === 'spotify' || (t.type === 'file' && t.url));
   },
 
   // Save playlist to storage
   savePlaylist() {
-    const streamingTracks = this.playlist.filter(t => t.type === 'youtube' || t.type === 'spotify');
-    localStorage.setItem(this.storageKey, JSON.stringify(streamingTracks));
+    const persistentTracks = this.playlist.filter(t => t.type === 'youtube' || t.type === 'spotify' || (t.type === 'file' && t.url));
+    DB.save(this.storageKey, persistentTracks);
   },
 
   // Escape HTML
@@ -392,4 +413,8 @@ const MusicModule = {
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   MusicModule.init();
+  DB.onReady(() => {
+    MusicModule.playlist = MusicModule.loadPlaylist();
+    MusicModule.render();
+  });
 });
