@@ -76,6 +76,35 @@
   gap: 1rem;
 }
 
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 1.25rem 0 0.75rem;
+  color: var(--text1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-section-title::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  border-radius: 99px;
+  background: var(--accent);
+}
+
+.contact-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contact-row label i {
+  color: var(--accent2);
+  font-size: 16px;
+}
+
 .form-actions {
   display: flex;
   align-items: center;

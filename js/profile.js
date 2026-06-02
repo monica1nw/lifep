@@ -97,6 +97,10 @@ const ProfileModule = {
       phone: document.getElementById('profile-phone').value.trim(),
       email: document.getElementById('profile-email').value.trim(),
       birthday: document.getElementById('profile-birthday').value,
+      facebook: document.getElementById('profile-facebook').value.trim(),
+      discord: document.getElementById('profile-discord').value.trim(),
+      instagram: document.getElementById('profile-instagram').value.trim(),
+      contactPhone: document.getElementById('profile-contact-phone').value.trim(),
       note: document.getElementById('profile-note').value.trim(),
       photo: this.getPhotoData(),
       updatedAt: new Date().toISOString()
@@ -116,6 +120,10 @@ const ProfileModule = {
     document.getElementById('profile-phone').value = profile.phone || '';
     document.getElementById('profile-email').value = profile.email || '';
     document.getElementById('profile-birthday').value = profile.birthday || '';
+    document.getElementById('profile-facebook').value = profile.facebook || '';
+    document.getElementById('profile-discord').value = profile.discord || '';
+    document.getElementById('profile-instagram').value = profile.instagram || '';
+    document.getElementById('profile-contact-phone').value = profile.contactPhone || '';
     document.getElementById('profile-note').value = profile.note || '';
 
     if (profile.photo) {
