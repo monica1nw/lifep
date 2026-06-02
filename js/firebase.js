@@ -1,11 +1,19 @@
 // ===== FIREBASE & LOCAL CACHE DATABASE MODULE =====
 
 const DB = {
-  firebaseConfig: window.LIFEP_FIREBASE_CONFIG || null,
+  firebaseConfig: window.LIFEP_FIREBASE_CONFIG || {
+    apiKey: 'AIzaSyDPJ0Yg2__P8wavd-dhWW6xNMwjLOfstqo',
+    authDomain: 'lifep-app.firebaseapp.com',
+    projectId: 'lifep-app',
+    storageBucket: 'lifep-app.firebasestorage.app',
+    messagingSenderId: '305504304561',
+    appId: '1:305504304561:web:1408f809feb6015dd4d190'
+  },
   app: null,
   db: null,
   useFirebase: false,
   ready: false,
+  lastError: '',
   listeners: [],
 
   KEYS: {
@@ -31,8 +39,13 @@ const DB = {
   COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'games', 'gallery'],
 
   async init() {
+    await this.ensureFirebaseRuntime();
+
     if (!this.hasFirebaseConfig() || !window.firebase) {
-      console.warn('LifeP: Firebase config is missing, using local cache only.');
+      this.lastError = !this.hasFirebaseConfig()
+        ? 'Firebase config missing'
+        : 'Firebase SDK missing';
+      console.warn('LifeP: Firebase is missing, using local cache only:', this.lastError);
       this.ready = true;
       this.notify();
       return;
@@ -46,11 +59,38 @@ const DB = {
       console.log('LifeP: Firebase sync ready.');
     } catch (error) {
       console.warn('LifeP: Firebase init failed, using local cache only:', error);
+      this.lastError = error.message || String(error);
       this.useFirebase = false;
     } finally {
       this.ready = true;
       this.notify();
     }
+  },
+
+  async ensureFirebaseRuntime() {
+    if (window.firebase?.firestore) return;
+
+    await this.loadScript('https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js');
+    await this.loadScript('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js');
+  },
+
+  loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        const waitForLoad = () => {
+          if (window.firebase) resolve();
+          else setTimeout(waitForLoad, 50);
+        };
+        waitForLoad();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`โหลด Firebase SDK ไม่สำเร็จ: ${src}`));
+      document.head.appendChild(script);
+    });
   },
 
   onReady(callback) {
@@ -371,7 +411,11 @@ function initCloudSyncStatus() {
       })
       .join(' ');
 
-    status.textContent = `${DB.useFirebase ? 'Firebase: พร้อม' : 'Firebase: ยังไม่พร้อม'} | ${counts}`;
+    const firebaseStatus = DB.useFirebase
+      ? 'Firebase: พร้อม'
+      : `Firebase: ยังไม่พร้อม${DB.lastError ? ' (' + DB.lastError + ')' : ''}`;
+
+    status.textContent = `${firebaseStatus} | ${counts}`;
   };
 
   button.addEventListener('click', async () => {
