@@ -389,12 +389,11 @@ function initCloudSyncStatus() {
 
   const panel = document.createElement('div');
   panel.id = 'cloud-sync-panel';
-  panel.style.cssText = 'margin:12px 0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:12px;color:var(--text2)';
   panel.innerHTML = `
-    <div id="cloud-sync-status" style="margin-bottom:8px">Firebase: กำลังตรวจสอบ...</div>
-    <button id="btn-cloud-sync-now" class="btn-outline" type="button" style="width:100%;font-size:12px;padding:8px 10px">
+    <button id="btn-cloud-sync-now" class="btn-outline cloud-sync-btn" type="button" data-tooltip="Firebase: กำลังตรวจสอบ...">
       <i class="ti ti-cloud-upload"></i> Sync now
     </button>
+    <div id="cloud-sync-status" class="cloud-sync-status" aria-live="polite"></div>
   `;
 
   footer.prepend(panel);
@@ -415,23 +414,30 @@ function initCloudSyncStatus() {
       ? 'Firebase: พร้อม'
       : `Firebase: ยังไม่พร้อม${DB.lastError ? ' (' + DB.lastError + ')' : ''}`;
 
-    status.textContent = `${firebaseStatus} | ${counts}`;
+    button.dataset.tooltip = `${firebaseStatus} | ${counts}`;
   };
 
   button.addEventListener('click', async () => {
     button.disabled = true;
-    status.textContent = 'กำลัง sync ข้อมูลขึ้น Firebase...';
+    status.textContent = 'กำลัง sync...';
 
     try {
       const uploaded = await DB.uploadAllLocalToCloud();
       status.textContent = uploaded.length
+        ? 'sync สำเร็จ'
+        : 'ไม่มีข้อมูล local';
+      button.dataset.tooltip = uploaded.length
         ? `sync สำเร็จ: ${uploaded.join(', ')}`
         : 'ไม่มีข้อมูล local ให้ sync';
     } catch (error) {
-      status.textContent = 'sync ไม่สำเร็จ: ' + error.message;
+      status.textContent = 'sync ไม่สำเร็จ';
+      button.dataset.tooltip = 'sync ไม่สำเร็จ: ' + error.message;
     } finally {
       button.disabled = false;
-      setTimeout(updateStatus, 2500);
+      setTimeout(() => {
+        status.textContent = '';
+        updateStatus();
+      }, 2500);
     }
   });
 

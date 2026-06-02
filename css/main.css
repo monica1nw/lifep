@@ -264,6 +264,48 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
   color: var(--text1);
 }
 
+.cloud-sync-btn {
+  width: 100%;
+  justify-content: center;
+  position: relative;
+}
+
+.cloud-sync-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  width: min(260px, 78vw);
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg2);
+  color: var(--text2);
+  box-shadow: var(--shadow);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 30;
+}
+
+.cloud-sync-btn:hover::after,
+.cloud-sync-btn:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cloud-sync-status {
+  min-height: 16px;
+  margin-top: 6px;
+  color: var(--text3);
+  font-size: 11px;
+  text-align: center;
+}
+
 /* ===== MAIN CONTENT ===== */
 .content {
   flex: 1;
