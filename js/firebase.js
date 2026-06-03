@@ -413,6 +413,14 @@ function initNavigation() {
         renderCalendar();
       }
 
+      if (page === 'settings' && typeof renderSettingsPage === 'function') {
+        renderSettingsPage();
+      }
+
+      if (page === 'admin' && typeof renderAdminPage === 'function') {
+        renderAdminPage();
+      }
+
       if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.add('collapsed');
         updateToggleIcon(true);
