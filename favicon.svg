@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7c6af7;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a594f9;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+  <!-- Background -->
   <rect width="100" height="100" rx="20" fill="#0e0e0f"/>
-  <polygon points="50,15 61,40 88,40 67,55 73,82 50,67 27,82 33,55 12,40 39,40" fill="url(#grad)"/>
+
+  <!-- Lavender flower spike -->
+  <g transform="translate(50, 50)">
+    <!-- Stem -->
+    <path d="M0 40 L0 5" stroke="#6b8e6b" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+    <!-- Leaf -->
+    <path d="M0 28 Q-12 24 -15 18 Q-5 22 0 28" fill="#7ba37b"/>
+
+    <!-- Flower buds (from top to bottom) -->
+    <ellipse cx="0" cy="-25" rx="8" ry="10" fill="#a987c5"/>
+    <ellipse cx="0" cy="-12" rx="10" ry="12" fill="#9676b2"/>
+    <ellipse cx="0" cy="3" rx="11" ry="13" fill="#8b6aa7"/>
+    <ellipse cx="0" cy="16" rx="9" ry="11" fill="#7d5c99"/>
+
+    <!-- Flower dots -->
+    <circle cx="-5" cy="-20" r="3" fill="#b99acc" opacity="0.8"/>
+    <circle cx="5" cy="-20" r="3" fill="#b99acc" opacity="0.8"/>
+    <circle cx="-6" cy="-8" r="3.5" fill="#b99acc" opacity="0.8"/>
+    <circle cx="6" cy="-8" r="3.5" fill="#b99acc" opacity="0.8"/>
+    <circle cx="-7" cy="5" r="4" fill="#b99acc" opacity="0.8"/>
+    <circle cx="7" cy="5" r="4" fill="#b99acc" opacity="0.8"/>
+  </g>
 </svg>
