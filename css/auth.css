@@ -560,6 +560,40 @@
   font-size: 13px;
 }
 
+/* ===== MIGRATION TOAST ===== */
+.migration-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--green);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 30000;
+  animation: slideInToast 0.3s ease;
+}
+
+.migration-toast i {
+  font-size: 20px;
+}
+
+@keyframes slideInToast {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
   .auth-container {

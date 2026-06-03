@@ -27,6 +27,7 @@ const Auth = {
         if (user) {
           console.log('Auth: User signed in', user.email);
           this.saveUserToFirestore(user);
+          this.migrateOldData(user);
         } else {
           console.log('Auth: User signed out');
         }
@@ -179,6 +180,79 @@ const Auth = {
     } catch (error) {
       console.warn('Auth: Could not save user to Firestore', error);
     }
+  },
+
+  // ===== MIGRATE OLD DATA =====
+  async migrateOldData(user) {
+    if (!this.db || !user) return;
+
+    const oldKeys = [
+      'myspace-todos', 'myspace-notes', 'myspace-events',
+      'myspace-profile', 'myspace-music', 'myspace-movies',
+      'myspace-diary', 'myspace-games', 'myspace-gallery'
+    ];
+
+    const collectionNames = ['todos', 'notes', 'events', 'profile', 'music', 'movies', 'diary', 'games', 'gallery'];
+
+    let migrated = [];
+
+    try {
+      // Check if user already has data in Firestore
+      const userDocRef = this.db.collection('lifep').doc(user.uid).collection('data').doc('profile');
+      const existingDoc = await userDocRef.get();
+
+      if (existingDoc.exists) {
+        console.log('Auth: User already has cloud data, skipping migration');
+        return;
+      }
+
+      // Migrate each collection
+      for (let i = 0; i < oldKeys.length; i++) {
+        const key = oldKeys[i];
+        const collection = collectionNames[i];
+        const dataStr = localStorage.getItem(key);
+
+        if (dataStr) {
+          try {
+            const data = JSON.parse(dataStr);
+            const hasData = Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0;
+
+            if (hasData) {
+              // Save to user's Firestore path
+              const docRef = this.db.collection('lifep').doc(user.uid).collection('data').doc(collection);
+              await docRef.set({
+                value: data,
+                migratedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              migrated.push(collection);
+              console.log(`Auth: Migrated ${collection}`);
+            }
+          } catch (e) {
+            console.warn(`Auth: Failed to migrate ${collection}:`, e);
+          }
+        }
+      }
+
+      if (migrated.length > 0) {
+        console.log(`Auth: Migration complete! Migrated: ${migrated.join(', ')}`);
+        // Show success message
+        this.showMigrationSuccess(migrated);
+      }
+    } catch (error) {
+      console.error('Auth: Migration failed:', error);
+    }
+  },
+
+  showMigrationSuccess(migrated) {
+    const toast = document.createElement('div');
+    toast.className = 'migration-toast';
+    toast.innerHTML = `
+      <i class="ti ti-cloud-upload"></i>
+      <span>ย้ายข้อมูล ${migrated.length} รายการไปยังบัญชีของคุณแล้ว!</span>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 5000);
   },
 
   async getUserProfile(uid) {
