@@ -40,6 +40,31 @@ html {
   transition: background-color 0.4s ease;
 }
 
+/* ===== CUSTOM SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
 body, .shell, .sidebar, .content, .page, .nav-item, .stat-card,
 .note-card, .todo-item, .event-item, .playlist-item, .now-playing,
 .music-add-section, .lyrics-section, .profile-form, .afk-overlay {
