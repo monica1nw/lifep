@@ -11,10 +11,12 @@ const DB = {
   },
   app: null,
   db: null,
+  auth: null,
   useFirebase: false,
   ready: false,
   lastError: '',
   listeners: [],
+  currentUserId: null,
 
   KEYS: {
     todos: 'myspace-todos',
@@ -25,7 +27,9 @@ const DB = {
     movies: 'myspace-movies',
     diary: 'myspace-diary',
     games: 'myspace-games',
-    gallery: 'myspace-gallery'
+    gallery: 'myspace-gallery',
+    settings: 'myspace-settings',
+    follows: 'myspace-follows'
   },
 
   DEFAULTS: {
@@ -37,10 +41,21 @@ const DB = {
     movies: [],
     diary: [],
     games: [],
-    gallery: []
+    gallery: [],
+    settings: {
+      fontSize: 'medium',
+      uiScale: 100,
+      compactMode: false,
+      animations: true,
+      transitions: true,
+      lazyLoadImages: true,
+      sounds: true,
+      volume: 50
+    },
+    follows: []
   },
 
-  COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'movies', 'diary', 'games', 'gallery'],
+  COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'movies', 'diary', 'games', 'gallery', 'settings', 'follows'],
 
   async init() {
     await this.ensureFirebaseRuntime();
@@ -58,9 +73,23 @@ const DB = {
     try {
       this.app = firebase.apps.length ? firebase.app() : firebase.initializeApp(this.firebaseConfig);
       this.db = firebase.firestore();
+      this.auth = firebase.auth();
+
+      // Listen for auth state changes
+      this.auth.onAuthStateChanged((user) => {
+        if (user) {
+          this.currentUserId = user.uid;
+          console.log('LifeP: User logged in:', user.uid);
+          this.syncAllFromCloud();
+        } else {
+          this.currentUserId = null;
+          console.log('LifeP: User logged out');
+        }
+        this.notify();
+      });
+
       this.useFirebase = true;
-      await this.syncAllFromCloud();
-      console.log('LifeP: Firebase sync ready.');
+      console.log('LifeP: Firebase ready with multi-user support.');
     } catch (error) {
       console.warn('LifeP: Firebase init failed, using local cache only:', error);
       this.lastError = error.message || String(error);
@@ -76,6 +105,7 @@ const DB = {
 
     await this.loadScript('https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js');
     await this.loadScript('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js');
+    await this.loadScript('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js');
   },
 
   loadScript(src) {
@@ -113,6 +143,27 @@ const DB = {
     });
   },
 
+  // ===== USER-SPECIFIC DATA PATHS =====
+  getUserCollectionPath(collection) {
+    if (!this.currentUserId) {
+      // Fallback to shared collection for non-logged-in users
+      return `lifep/${collection}`;
+    }
+    return `lifep/${this.currentUserId}/data/${collection}`;
+  },
+
+  getUserDocRef(collection) {
+    if (!this.db) return null;
+
+    if (!this.currentUserId) {
+      return this.db.collection('lifep').doc(collection);
+    }
+
+    return this.db.collection('lifep').doc(this.currentUserId)
+      .collection('data').doc(collection);
+  },
+
+  // ===== DATA OPERATIONS =====
   get(collection) {
     const key = this.KEYS[collection];
     if (!key) return [];
@@ -135,7 +186,7 @@ const DB = {
     localStorage.setItem(key, JSON.stringify(data));
     this.updateBadges();
 
-    if (this.useFirebase && this.db) {
+    if (this.useFirebase && this.db && this.currentUserId) {
       this.syncToCloud(collection, data);
     }
   },
@@ -175,15 +226,21 @@ const DB = {
     return this.ensureArray(collection).find(item => Number(item.id) === Number(id)) || null;
   },
 
+  // ===== CLOUD SYNC (USER-SPECIFIC) =====
   async syncAllFromCloud() {
+    if (!this.currentUserId) {
+      console.log('LifeP: No user logged in, skipping cloud sync');
+      return;
+    }
+
     for (const collection of this.COLLECTIONS) {
       await this.syncFromCloud(collection);
     }
   },
 
   async uploadAllLocalToCloud() {
-    if (!this.useFirebase || !this.db) {
-      throw new Error('Firebase ยังไม่พร้อม');
+    if (!this.useFirebase || !this.db || !this.currentUserId) {
+      throw new Error('Firebase ยังไม่พร้อม หรือยังไม่ได้ล็อกอิน');
     }
 
     const uploaded = [];
@@ -195,12 +252,20 @@ const DB = {
       }
     }
 
+    // Log activity
+    await this.logActivity('sync', 'Synced data to cloud');
+
     return uploaded;
   },
 
   async syncFromCloud(collection) {
+    if (!this.currentUserId) return;
+
     const localData = this.get(collection);
-    const docRef = this.db.collection('lifep').doc(collection);
+    const docRef = this.getUserDocRef(collection);
+
+    if (!docRef) return;
+
     const snapshot = await docRef.get();
 
     if (snapshot.exists) {
@@ -211,12 +276,15 @@ const DB = {
       return;
     }
 
+    // If no remote data, upload local data
     if (!this.isEmptyValue(localData, collection)) {
       await this.writeCloudDoc(collection, localData);
     }
   },
 
   async syncToCloud(collection, data) {
+    if (!this.currentUserId) return;
+
     try {
       await this.writeCloudDoc(collection, data);
     } catch (error) {
@@ -225,12 +293,33 @@ const DB = {
   },
 
   async writeCloudDoc(collection, data) {
-    await this.db.collection('lifep').doc(collection).set({
+    const docRef = this.getUserDocRef(collection);
+    if (!docRef) throw new Error('No document reference');
+
+    await docRef.set({
       value: data,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   },
 
+  // ===== ACTIVITY LOG =====
+  async logActivity(action, details) {
+    if (!this.db || !this.currentUserId) return;
+
+    try {
+      await this.db.collection('lifep').doc(this.currentUserId)
+        .collection('logs').add({
+          action,
+          details,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          userAgent: navigator.userAgent
+        });
+    } catch (error) {
+      console.warn('LifeP: Failed to log activity:', error);
+    }
+  },
+
+  // ===== UTILITY FUNCTIONS =====
   ensureArray(collection) {
     const data = this.get(collection);
     return Array.isArray(data) ? data : [];
@@ -243,7 +332,7 @@ const DB = {
 
   isEmptyValue(value, collection) {
     if (Array.isArray(value)) return value.length === 0;
-    if (collection === 'profile') return !value || Object.keys(value).length === 0;
+    if (collection === 'profile' || collection === 'settings') return !value || Object.keys(value).length === 0;
     return !value;
   },
 
@@ -272,7 +361,7 @@ const DB = {
     return this.COLLECTIONS.reduce((data, collection) => {
       data[collection] = this.get(collection);
       return data;
-    }, { exportedAt: new Date().toISOString() });
+    }, { exportedAt: new Date().toISOString(), userId: this.currentUserId });
   },
 
   importData(data) {
@@ -289,6 +378,11 @@ const DB = {
       this.firebaseConfig.projectId &&
       this.firebaseConfig.appId
     );
+  },
+
+  // Check if user is logged in
+  isLoggedIn() {
+    return !!this.currentUserId;
   }
 };
 
@@ -415,13 +509,20 @@ function initCloudSyncStatus() {
       .join(' ');
 
     const firebaseStatus = DB.useFirebase
-      ? 'Firebase: พร้อม'
+      ? DB.currentUserId
+        ? `Firebase: พร้อม (User: ${DB.currentUserId.slice(0, 8)}...)`
+        : 'Firebase: พร้อม (ยังไม่ได้ล็อกอิน)'
       : `Firebase: ยังไม่พร้อม${DB.lastError ? ' (' + DB.lastError + ')' : ''}`;
 
     button.dataset.tooltip = `${firebaseStatus} | ${counts}`;
   };
 
   button.addEventListener('click', async () => {
+    if (!DB.currentUserId) {
+      status.textContent = 'กรุณาล็อกอินก่อน sync';
+      return;
+    }
+
     button.disabled = true;
     status.textContent = 'กำลัง sync...';
 

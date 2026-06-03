@@ -1,0 +1,554 @@
+/* ===== SETTINGS PAGE ===== */
+.settings-container {
+  max-width: 700px;
+}
+
+.settings-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent2);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-section-title i {
+  font-size: 20px;
+}
+
+.settings-group {
+  margin-bottom: 1rem;
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 0.5rem;
+}
+
+/* Option Buttons */
+.settings-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.settings-option {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font);
+}
+
+.settings-option:hover {
+  border-color: var(--accent);
+  color: var(--text1);
+}
+
+.settings-option.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.toggle-switch {
+  width: 44px;
+  height: 24px;
+  background: var(--bg4);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: var(--text3);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+input:checked + .toggle-label .toggle-switch {
+  background: var(--accent);
+}
+
+input:checked + .toggle-label .toggle-switch::after {
+  left: 23px;
+  background: #fff;
+}
+
+.toggle-text {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* Slider */
+.settings-slider {
+  width: 100%;
+  max-width: 300px;
+  height: 6px;
+  background: var(--bg4);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.settings-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Select */
+.settings-select {
+  width: 100%;
+  max-width: 300px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text1);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+}
+
+.settings-select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Performance Button */
+.settings-performance-btn {
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.settings-performance-btn:hover {
+  background: rgba(124, 106, 247, 0.1);
+}
+
+/* PIN Button */
+.settings-pin-btn {
+  margin-top: 0.75rem;
+  font-size: 12px;
+}
+
+/* Account Info */
+.settings-account-info {
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.settings-account-info p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 0.5rem;
+}
+
+.settings-account-info p:last-child {
+  margin-bottom: 0;
+}
+
+.settings-account-info strong {
+  color: var(--text1);
+}
+
+/* Account Actions */
+.settings-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settings-account-actions .btn-outline {
+  font-size: 13px;
+}
+
+.btn-danger {
+  color: var(--red);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--red);
+}
+
+/* ===== PIN MODAL ===== */
+.pin-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.pin-modal-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 350px;
+  width: 90%;
+}
+
+.pin-modal-content h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--text1);
+  margin-bottom: 0.5rem;
+}
+
+.pin-modal-content p {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 1.5rem;
+}
+
+.pin-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  color: var(--text1);
+  font-size: 28px;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  letter-spacing: 8px;
+  font-family: monospace;
+}
+
+.pin-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.pin-input.error {
+  border-color: var(--red);
+  animation: shake 0.3s ease;
+}
+
+.pin-hint {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 0.5rem;
+  margin-bottom: 0 !important;
+}
+
+.pin-error {
+  color: var(--red);
+  font-size: 12px;
+  min-height: 18px;
+  margin-bottom: 0 !important;
+}
+
+.pin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.pin-actions .btn,
+.pin-actions .btn-outline {
+  flex: 1;
+  justify-content: center;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ===== FOLLOW LIST MODAL ===== */
+.follow-list-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 15000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.follow-list-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.follow-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.follow-list-header h3 {
+  font-size: 16px;
+  color: var(--text1);
+}
+
+.follow-list-close {
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.follow-list-close:hover {
+  background: var(--bg3);
+  color: var(--text1);
+}
+
+.follow-list-body {
+  padding: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.follow-list-loading,
+.follow-list-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text3);
+  font-size: 14px;
+}
+
+.follow-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.follow-list-item:hover {
+  background: var(--bg3);
+}
+
+.follow-list-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.follow-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.follow-list-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text1);
+}
+
+.follow-list-email {
+  font-size: 12px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== FOLLOW BUTTON ===== */
+.follow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.follow-btn:hover {
+  background: #6a58e5;
+  border-color: #6a58e5;
+}
+
+.follow-btn.following {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text2);
+}
+
+.follow-btn.following:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== CSS VARIABLES FOR SETTINGS ===== */
+:root {
+  --font-size-base: 14px;
+  --ui-scale: 1;
+}
+
+/* Font size adjustments */
+.no-animations * {
+  animation: none !important;
+}
+
+.no-transitions * {
+  transition: none !important;
+}
+
+.compact-mode {
+  --spacing-base: 0.75rem;
+}
+
+.compact-mode .page {
+  padding: 1.5rem;
+}
+
+.compact-mode .nav-item {
+  padding: 8px 10px;
+}
+
+.compact-mode .section-label {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Lazy load images */
+.lazy-load-images img[data-src] {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-load-images img.loaded {
+  opacity: 1;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .settings-section {
+    padding: 1rem;
+  }
+
+  .settings-options {
+    flex-direction: column;
+  }
+
+  .settings-option {
+    width: 100%;
+    text-align: center;
+  }
+
+  .settings-account-actions {
+    flex-direction: column;
+  }
+
+  .settings-account-actions .btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
+}
