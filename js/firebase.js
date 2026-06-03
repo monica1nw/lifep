@@ -22,6 +22,7 @@ const DB = {
     events: 'myspace-events',
     profile: 'myspace-profile',
     music: 'myspace-music',
+    movies: 'myspace-movies',
     games: 'myspace-games',
     gallery: 'myspace-gallery'
   },
@@ -32,11 +33,12 @@ const DB = {
     events: [],
     profile: {},
     music: [],
+    movies: [],
     games: [],
     gallery: []
   },
 
-  COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'games', 'gallery'],
+  COLLECTIONS: ['todos', 'notes', 'events', 'profile', 'music', 'movies', 'games', 'gallery'],
 
   async init() {
     await this.ensureFirebaseRuntime();

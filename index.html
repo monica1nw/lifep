@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/music.css">
+<link rel="stylesheet" href="css/movies.css">
 <link rel="stylesheet" href="css/games.css">
 <link rel="stylesheet" href="css/gallery.css">
 </head>
@@ -82,6 +83,9 @@
       </div>
       <div class="nav-item" data-page="music">
         <i class="ti ti-music"></i> เพลง
+      </div>
+      <div class="nav-item" data-page="movies">
+        <i class="ti ti-device-tv"></i> หนัง/ซีรีส์
       </div>
       <div class="nav-item" data-page="games">
         <i class="ti ti-device-gamepad-2"></i> เกม
@@ -338,6 +342,76 @@
       <div class="playlist" id="playlist"></div>
     </div>
 
+    <!-- ========= MOVIES PAGE ========= -->
+    <div class="page" id="page-movies">
+      <div class="page-header">
+        <div>
+          <div class="page-title">หนัง/ซีรีส์</div>
+          <div class="page-subtitle">เก็บรายการที่อยากดูและดูแล้ว</div>
+        </div>
+        <button class="btn" id="btn-add-movie"><i class="ti ti-plus"></i> เพิ่มรายการ</button>
+      </div>
+
+      <!-- Add Movie Form -->
+      <div class="movie-form" id="movie-form" style="display:none;">
+        <div class="form-group">
+          <label>ชื่อเรื่อง</label>
+          <input type="text" id="movie-title" placeholder="ชื่อหนังหรือซีรีส์...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>ประเภท</label>
+            <select id="movie-type">
+              <option value="movie">🎬 หนัง</option>
+              <option value="series">📺 ซีรีส์</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>สถานะ</label>
+            <select id="movie-status">
+              <option value="อยากดู">💭 อยากดู</option>
+              <option value="กำลังดู">👀 กำลังดู</option>
+              <option value="ดูจบแล้ว">✅ ดูจบแล้ว</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>คะแนน</label>
+          <div class="rating-input" id="movie-rating-input">
+            <span class="star" data-rating="1">★</span>
+            <span class="star" data-rating="2">★</span>
+            <span class="star" data-rating="3">★</span>
+            <span class="star" data-rating="4">★</span>
+            <span class="star" data-rating="5">★</span>
+          </div>
+          <input type="hidden" id="movie-rating" value="0">
+        </div>
+        <div class="form-group">
+          <label>โปสเตอร์ (URL)</label>
+          <input type="text" id="movie-poster" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>บันทึก/รีวิว</label>
+          <textarea id="movie-note" placeholder="ความรู้สึกหรืออะไรก็ได้..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="btn-save-movie"><i class="ti ti-check"></i> บันทึก</button>
+          <button class="btn-outline" id="btn-cancel-movie">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="movie-filter">
+        <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
+        <button class="filter-btn" data-filter="อยากดู">💭 อยากดู</button>
+        <button class="filter-btn" data-filter="กำลังดู">👀 กำลังดู</button>
+        <button class="filter-btn" data-filter="ดูจบแล้ว">✅ ดูจบแล้ว</button>
+      </div>
+
+      <!-- Movies Grid -->
+      <div class="movies-grid" id="movies-grid"></div>
+    </div>
+
     <!-- ========= GAMES PAGE ========= -->
     <div class="page" id="page-games">
       <div class="page-header">
@@ -459,6 +533,7 @@
 <script src="js/calendar.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/music.js"></script>
+<script src="js/movies.js"></script>
 <script src="js/games.js"></script>
 <script src="js/gallery.js"></script>
 </body>
