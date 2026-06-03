@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/music.css">
 <link rel="stylesheet" href="css/movies.css">
+<link rel="stylesheet" href="css/diary.css">
 <link rel="stylesheet" href="css/games.css">
 <link rel="stylesheet" href="css/gallery.css">
 </head>
@@ -86,6 +87,9 @@
       </div>
       <div class="nav-item" data-page="movies">
         <i class="ti ti-device-tv"></i> หนัง/ซีรีส์
+      </div>
+      <div class="nav-item" data-page="diary">
+        <i class="ti ti-book"></i> ไดอารี่
       </div>
       <div class="nav-item" data-page="games">
         <i class="ti ti-device-gamepad-2"></i> เกม
@@ -413,6 +417,48 @@
       <div class="movies-grid" id="movies-grid"></div>
     </div>
 
+    <!-- ========= DIARY PAGE ========= -->
+    <div class="page" id="page-diary">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ไดอารี่</div>
+          <div class="page-subtitle">บันทึกเรื่องราวประจำวันของคุณ</div>
+        </div>
+        <button class="btn" id="btn-add-diary"><i class="ti ti-pencil"></i> เขียนใหม่</button>
+      </div>
+
+      <!-- Diary Editor -->
+      <div class="diary-editor" id="diary-editor" style="display:none;">
+        <div class="diary-date-display" id="diary-date-display"></div>
+        <div class="diary-mood-row">
+          <label>อารมณ์วันนี้:</label>
+          <div class="mood-selector" id="mood-selector">
+            <button class="mood-btn" data-mood="😊">😊 เฮปปี้</button>
+            <button class="mood-btn" data-mood="😌">😌 สบายใจ</button>
+            <button class="mood-btn" data-mood="😐">😐 เฉยๆ</button>
+            <button class="mood-btn" data-mood="😔">😔 เศร้า</button>
+            <button class="mood-btn" data-mood="😤">😤 หงุดหงิด</button>
+            <button class="mood-btn" data-mood="🥰">🥰 อบอุ่น</button>
+            <button class="mood-btn" data-mood="😴">😴 เหนื่อย</button>
+            <button class="mood-btn" data-mood="🤩">🤩 ตื่นเต้น</button>
+          </div>
+          <input type="hidden" id="diary-mood" value="😊">
+        </div>
+        <div class="form-group">
+          <label>เรื่องราววันนี้</label>
+          <textarea id="diary-content" placeholder="เขียนอะไรก็ได้ที่อยากจำ..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="btn-save-diary"><i class="ti ti-device-floppy"></i> บันทึก</button>
+          <button class="btn-outline" id="btn-cancel-diary">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Diary Entries -->
+      <div class="section-label">บันทึกทั้งหมด</div>
+      <div class="diary-entries" id="diary-entries"></div>
+    </div>
+
     <!-- ========= GAMES PAGE ========= -->
     <div class="page" id="page-games">
       <div class="page-header">
@@ -535,6 +581,7 @@
 <script src="js/profile.js"></script>
 <script src="js/music.js"></script>
 <script src="js/movies.js"></script>
+<script src="js/diary.js"></script>
 <script src="js/games.js"></script>
 <script src="js/gallery.js"></script>
 </body>

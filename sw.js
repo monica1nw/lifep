@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifep-v5';
+const CACHE_NAME = 'lifep-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -9,6 +9,7 @@ const urlsToCache = [
   '/css/profile.css',
   '/css/music.css',
   '/css/movies.css',
+  '/css/diary.css',
   '/css/games.css',
   '/css/gallery.css',
   '/js/firebase.js',
@@ -20,6 +21,7 @@ const urlsToCache = [
   '/js/profile.js',
   '/js/music.js',
   '/js/movies.js',
+  '/js/diary.js',
   '/js/games.js',
   '/js/gallery.js',
   '/favicon.svg',
