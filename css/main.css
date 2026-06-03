@@ -157,6 +157,59 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
   letter-spacing: -0.5px;
 }
 
+.logo-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-flower {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.logo-stem {
+  stroke: #6b8e6b;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.logo-leaf {
+  fill: #7ba37b;
+}
+
+.logo-bud {
+  fill: #9b7bb8;
+}
+
+.bud-1 { fill: #a987c5; }
+.bud-2 { fill: #9676b2; }
+.bud-3 { fill: #8b6aa7; }
+.bud-4 { fill: #7d5c99; }
+
+.logo-dot {
+  fill: #b99acc;
+  opacity: 0.8;
+}
+
+/* Logo animation */
+.logo-flower:hover .logo-bud {
+  animation: lavenderSway 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes lavenderSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1.5deg); }
+  75% { transform: rotate(-1.5deg); }
+}
+
+.logo-word {
+  color: var(--accent2);
+}
+
 .logo span {
   color: var(--text3);
   font-weight: 400;
