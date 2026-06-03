@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifep-v3';
+const CACHE_NAME = 'lifep-v4';
 const urlsToCache = [
   '/',
   '/index.html',
