@@ -229,14 +229,19 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
   margin-bottom: 0.5rem;
 }
 
+.nav-section:first-of-type {
+  margin-bottom: 0.5rem;
+}
+
 .nav-label {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   padding: 0 0.5rem;
   margin-bottom: 4px;
+  margin-top: 8px;
 }
 
 .nav-item {
