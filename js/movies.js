@@ -155,7 +155,7 @@ const MoviesModule = {
         <div class="movie-card-info">
           <div class="movie-card-title">${this.escapeHtml(movie.title)}</div>
           <div class="movie-card-meta">
-            <span class="movie-card-type">${movie.type === 'movie' ? '🎬 หนัง' : '📺 ซีรีส์'}</span>
+            <span class="movie-card-type">${movie.type === 'movie' ? '🎬 หนัง' : movie.type === 'anime' ? '🎌 อนิเมะ' : '📺 ซีรีส์'}</span>
             <span class="movie-card-status status-${movie.status}">${movie.status}</span>
           </div>
           ${movie.rating > 0 ? `<div class="movie-card-rating">${this.getStars(movie.rating)}</div>` : ''}
@@ -201,7 +201,7 @@ const MoviesModule = {
         <div class="movie-modal-body">
           <div class="movie-modal-title">${this.escapeHtml(movie.title)}</div>
           <div class="movie-modal-meta">
-            <span>${movie.type === 'movie' ? '🎬 หนัง' : '📺 ซีรีส์'}</span>
+            <span>${movie.type === 'movie' ? '🎬 หนัง' : movie.type === 'anime' ? '🎌 อนิเมะ' : '📺 ซีรีส์'}</span>
             <span class="movie-card-status status-${movie.status}">${movie.status}</span>
             ${movie.rating > 0 ? `<span class="movie-modal-rating">${this.getStars(movie.rating)}</span>` : ''}
           </div>
