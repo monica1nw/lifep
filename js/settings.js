@@ -284,6 +284,7 @@ function renderSettingsPage() {
       <div class="settings-account-actions">
         <button class="btn-outline" id="btn-export-data"><i class="ti ti-download"></i> ส่งออกข้อมูล</button>
         <button class="btn-outline" id="btn-change-password"><i class="ti ti-key"></i> เปลี่ยนรหัสผ่าน</button>
+        <button class="btn-outline" id="btn-become-admin"><i class="ti ti-shield"></i> ขอเป็น Admin</button>
         <button class="btn-outline btn-danger" id="btn-delete-account"><i class="ti ti-trash"></i> ลบบัญชี</button>
       </div>
     </div>
@@ -429,6 +430,30 @@ function bindSettingsEvents() {
           } catch (error) {
             alert('เกิดข้อผิดพลาด: ' + error.message);
           }
+        }
+      }
+    });
+  }
+
+  // Become Admin
+  const becomeAdminBtn = document.getElementById('btn-become-admin');
+  if (becomeAdminBtn) {
+    becomeAdminBtn.addEventListener('click', async () => {
+      if (!window.LifePAuth?.user) {
+        alert('กรุณาล็อกอินก่อน');
+        return;
+      }
+
+      if (confirm('ต้องการขอสิทธิ์ Admin?')) {
+        try {
+          const db = firebase.firestore();
+          await db.collection('users').doc(window.LifePAuth.user.uid).update({
+            admin: true
+          });
+          alert('✅ คุณเป็น Admin แล้ว! Refresh หน้าเว็บเพื่อเห็นเมนู Admin');
+          location.reload();
+        } catch (error) {
+          alert('เกิดข้อผิดพลาด: ' + error.message);
         }
       }
     });
