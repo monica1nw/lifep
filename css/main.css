@@ -226,7 +226,7 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
 
 .nav-section {
   padding: 0 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .nav-section:first-of-type {
@@ -234,14 +234,14 @@ body:has(.sidebar.collapsed) .sidebar-toggle {
 }
 
 .nav-label {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text3);
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0 0.5rem;
   margin-bottom: 4px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .nav-item {
