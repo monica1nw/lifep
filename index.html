@@ -53,6 +53,9 @@
     </div>
     <p class="auth-subtitle">แดชบอร์ดส่วนตัวของคุณ</p>
 
+    <!-- Close button -->
+    <button class="auth-close" id="btn-close-auth"><i class="ti ti-x"></i></button>
+
     <!-- Login Form -->
     <div class="auth-form" id="login-form">
       <div class="auth-tabs">
@@ -209,6 +212,11 @@
     </div>
 
     <div class="sidebar-footer">
+      <!-- Login Prompt (shown when not logged in) -->
+      <div class="login-prompt" id="login-prompt">
+        <p class="login-prompt-text">🔐 ล็อกอินเพื่อ sync ข้อมูลกับ cloud</p>
+        <button class="btn" id="btn-show-login"><i class="ti ti-login"></i> ล็อกอิน</button>
+      </div>
       <!-- User Section -->
       <div class="user-section" id="user-section" style="display:none;">
         <div class="user-info">

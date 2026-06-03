@@ -54,6 +54,7 @@ const Auth = {
   updateUI() {
     const authOverlay = document.getElementById('auth-overlay');
     const userSection = document.getElementById('user-section');
+    const loginPrompt = document.getElementById('login-prompt');
     const userAvatar = document.getElementById('user-avatar');
     const userName = document.getElementById('user-display-name');
     const userEmail = document.getElementById('user-email');
@@ -62,6 +63,7 @@ const Auth = {
       // User is logged in
       if (authOverlay) authOverlay.classList.add('hidden');
       if (userSection) userSection.style.display = 'block';
+      if (loginPrompt) loginPrompt.style.display = 'none';
 
       // Update user info
       const displayName = this.user.displayName || this.user.email?.split('@')[0] || 'User';
@@ -80,9 +82,10 @@ const Auth = {
       if (userEmail) userEmail.textContent = this.user.email;
 
     } else {
-      // User is not logged in
-      if (authOverlay) authOverlay.classList.remove('hidden');
+      // User is not logged in - allow app usage but show login prompt
+      if (authOverlay) authOverlay.classList.add('hidden');
       if (userSection) userSection.style.display = 'none';
+      if (loginPrompt) loginPrompt.style.display = 'block';
     }
   },
 
@@ -245,6 +248,23 @@ const Auth = {
 function initAuthUI() {
   const loginForm = document.getElementById('login-form');
   const authError = document.getElementById('auth-error');
+  const authOverlay = document.getElementById('auth-overlay');
+
+  // Show login button in sidebar
+  const btnShowLogin = document.getElementById('btn-show-login');
+  if (btnShowLogin) {
+    btnShowLogin.addEventListener('click', () => {
+      if (authOverlay) authOverlay.classList.remove('hidden');
+    });
+  }
+
+  // Close auth overlay (skip login)
+  const btnCloseAuth = document.getElementById('btn-close-auth');
+  if (btnCloseAuth) {
+    btnCloseAuth.addEventListener('click', () => {
+      if (authOverlay) authOverlay.classList.add('hidden');
+    });
+  }
 
   // Tab switching
   document.querySelectorAll('.auth-tab').forEach(tab => {
