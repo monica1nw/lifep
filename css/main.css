@@ -72,6 +72,12 @@ html, body {
   position: relative;
   z-index: 100;
   overflow: hidden;
+  height: 100vh;
+}
+
+.sidebar .nav-section {
+  overflow-y: auto;
+  flex: 1;
 }
 
 .sidebar.collapsed {
